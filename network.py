@@ -5,7 +5,6 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class GeoLocalizationNet(nn.Module):
     """The model is composed of a backbone and an aggregation layer.
     The backbone is a (cropped) ResNet-18, and the aggregation is a L2
@@ -14,7 +13,11 @@ class GeoLocalizationNet(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.backbone = get_backbone(args)
-        self.aggregation = nn.Sequential(L2Norm(),
+        if args.net == 'GEM':
+            logging.info('using GeM network')
+            self.aggregation = init_gem(args)
+        else:
+            self.aggregation = nn.Sequential(L2Norm(),
                                          torch.nn.AdaptiveAvgPool2d(1),
                                          Flatten())
     def forward(self, x):
@@ -51,4 +54,3 @@ class L2Norm(nn.Module):
         self.dim = dim
     def forward(self, x):
         return F.normalize(x, p=2, dim=self.dim)
-
