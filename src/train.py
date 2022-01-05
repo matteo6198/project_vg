@@ -15,9 +15,9 @@ from Utils import util
 from Utils import parser
 from Utils import commons
 from Networks import base_network
-from Datasets import datasets_ws
+from Datasets import datasets_ws as datasets
 from Utils import constants
-import test
+from test import test
 
 #### Initial setup: parser, logging...
 args = parser.parse_arguments()
@@ -34,8 +34,8 @@ logging.info(f"The outputs are being saved in {args.output_folder}")
 logging.info(f"Using {torch.cuda.device_count()} GPUs and {multiprocessing.cpu_count()} CPUs")
 
 #### Creation of Datasets
-triplets_ds = TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
-val_ds = BaseDataset(args, args.datasets_folder, "pitts30k", "val")
+triplets_ds = datasets.TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
+val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 
 #### Initialize model
 model = network.GeoLocalizationNet(args)
@@ -131,24 +131,28 @@ for epoch_num in range(start_epoch, args.epochs_num):
     
     # If recall@5 did not improve for "many" epochs, stop training
     if is_best:
-        logging.info(f"Improved: previous best R@5 = {best_r5:.1f}, current R@5 = {recalls[1]:.1f}")
+        logging.info(f"Improved: previous best R@5 = {best_r5:.3f}, current R@5 = {recalls[1]:.3f}")
         best_r5 = recalls[1]
         not_improved_num = 0
     else:
         not_improved_num += 1
-        logging.info(f"Not improved: {not_improved_num} / {args.patience}: best R@5 = {best_r5:.1f}, current R@5 = {recalls[1]:.1f}")
+        logging.info(f"Not improved: {not_improved_num} / {args.patience}: best R@5 = {best_r5:.3f}, current R@5 = {recalls[1]:.3f}")
         if not_improved_num >= args.patience:
             logging.info(f"Performance did not improve for {not_improved_num} epochs. Stop training.")
             break
 
 
-logging.info(f"Best R@5: {best_r5:.1f}")
+logging.info(f"Best R@5: {best_r5:.3f}")
 logging.info(f"Trained for {epoch_num+1:02d} epochs, in total in {str(datetime.now() - start_time)[:-7]}")
 
 #### Test best model on test set
 best_model_state_dict = torch.load(join(args.output_folder, "best_model.pth"))["model_state_dict"]
 model.load_state_dict(best_model_state_dict)
 
-recalls, recalls_str = test.test(args, test_ds, model)
-logging.info(f"Recalls on {test_ds}: {recalls_str}")
 
+for test_dataset in TEST_DATASETS:
+    test_ds = datasets.BaseDataset(args, args.datasets_folder, test_dataset, "test")
+    logging.info(f"Test set {test_dataset}: {test_ds}")
+
+    recalls, recalls_str = test(args, test_ds, model)
+    logging.info(f"Recalls on {test_ds}: {recalls_str}")
