@@ -5,6 +5,8 @@ import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
 
+from Networks.GeMNet import init_gem
+
 class GeoLocalizationNet(nn.Module):
     """The model is composed of a backbone and an aggregation layer.
     The backbone is a (cropped) ResNet-18, and the aggregation is a L2

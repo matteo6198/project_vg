@@ -11,34 +11,31 @@ from datetime import datetime
 from torch.utils.data.dataloader import DataLoader
 torch.backends.cudnn.benchmark= True  # Provides a speedup
 
-import util
+from Utils import util
+from Utils import parser
+from Utils import commons
+from Networks import base_network
+from Datasets import datasets_ws
+from Utils import constants
 import test
-import parser
-import commons
-import network
-import datasets_ws
 
 #### Initial setup: parser, logging...
 args = parser.parse_arguments()
 start_time = datetime.now()
-args.output_folder = join("runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
+if args.resume:
+    args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
+else:
+    args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
+
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
-logging.info(f"Arguments: {args}")
+logging.info(f"Arguments: {vars(args)}")
 logging.info(f"The outputs are being saved in {args.output_folder}")
 logging.info(f"Using {torch.cuda.device_count()} GPUs and {multiprocessing.cpu_count()} CPUs")
 
 #### Creation of Datasets
-logging.debug(f"Loading dataset Pitts30k from folder {args.datasets_folder}")
-
-triplets_ds = datasets_ws.TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
-logging.info(f"Train query set: {triplets_ds}")
-
-val_ds = datasets_ws.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
-logging.info(f"Val set: {val_ds}")
-
-test_ds = datasets_ws.BaseDataset(args, args.datasets_folder, "pitts30k", "test")
-logging.info(f"Test set: {test_ds}")
+triplets_ds = TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
+val_ds = BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 
 #### Initialize model
 model = network.GeoLocalizationNet(args)
@@ -50,11 +47,19 @@ criterion_triplet = nn.TripletMarginLoss(margin=args.margin, p=2, reduction="sum
 
 best_r5 = 0
 not_improved_num = 0
+start_epoch = 0
 
-logging.info(f"Output dimension of the model is {args.features_dim}")
+#### Resume training if specified
+if args.resume:
+    start_epoch, best_r5, not_improved_num = resume_train(args.output_folder, model, optimizer)
+else:
+    logging.debug(f"Loading dataset Pitts30k from folder {args.datasets_folder}")
+    logging.info(f"Train query set: {triplets_ds}")
+    logging.info(f"Val set: {val_ds}")
+    logging.info(f"Output dimension of the model is {args.features_dim}")
 
 #### Training loop
-for epoch_num in range(args.epochs_num):
+for epoch_num in range(start_epoch, args.epochs_num):
     logging.info(f"Start training epoch: {epoch_num:02d}")
     
     epoch_start_time = datetime.now()

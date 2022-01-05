@@ -1,5 +1,6 @@
 
 import argparse
+from Utils import constants
 
 
 def parse_arguments():
@@ -27,16 +28,20 @@ def parse_arguments():
     # Other parameters
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", type=str, default="cuda", choices=["cuda", "cpu"])
-    parser.add_argument("--num_workers", type=int, default=8, help="num_workers for all dataloaders")
+    parser.add_argument("--num_workers", type=int, default=3, help="num_workers for all dataloaders")
     parser.add_argument("--val_positive_dist_threshold", type=int, default=25, help="Val/test threshold in meters")
     parser.add_argument("--train_positives_dist_threshold", type=int, default=10, help="Train threshold in meters")
     parser.add_argument('--recall_values', type=int, default=[1, 5, 10, 20], nargs="+",
                         help="Recalls to be computed, such as R@5.")
     # Paths parameters
-    parser.add_argument("--datasets_folder", type=str, required=True, help="Path with datasets")
+    parser.add_argument("--datasets_folder", type=str, default=constants.DATASETS_FOLDER, help="Path with datasets")
     parser.add_argument("--exp_name", type=str, default="default",
                         help="Folder name of the current run (saved in ./runs/)")
-    
+
+    parser.add_argument("--resume", type=str, default=False, help="reload a previuos interrupted train, it shoud contain the folder of the run like default/2022-01-02_13-18-59/")
+    parser.add_argument("--net", type=str, default='res18', help="specific feature network to use (supported only 'res18')")
+    parser.add_argument("--out-dim", type=int, default=constants.ARCH_OUT_DIM['res18'], help='specify output dimensions (useful for GeM)')
+
     args = parser.parse_args()
     
     if args.queries_per_epoch % args.cache_refresh_rate != 0:
