@@ -26,6 +26,8 @@ if args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
     if not(os.path.isdir(args.output_folder)):
         raise ValueError(f"Folder {args.output_folder} does not exists")
+    if not(os.path.isfile(args.output_folder+'last_model.pth')) or not(os.path.isfile(args.output_folder+'args.pth')):
+        raise ValueError(f"Model file does not exists. You must restart training")
     args = torch.load(args.output_folder + 'args.pth')
 else:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
