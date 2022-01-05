@@ -31,7 +31,7 @@ if args.resume:
     args = torch.load(args.output_folder + 'args.pth')
 else:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
-    torch.save(args, args,output_folder + '/args.pth')
+    torch.save(args, args.output_folder + '/args.pth')
 
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
