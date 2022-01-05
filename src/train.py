@@ -88,7 +88,7 @@ for epoch_num in range(start_epoch, args.epochs_num):
         
         triplets_dl = DataLoader(dataset=triplets_ds, num_workers=args.num_workers,
                                  batch_size=args.train_batch_size,
-                                 collate_fn=datasets_ws.collate_fn,
+                                 collate_fn=datasets.collate_fn,
                                  pin_memory=(args.device=="cuda"),
                                  drop_last=True)
         
