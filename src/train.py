@@ -62,7 +62,7 @@ not_improved_num = 0
 start_epoch = 0
 
 #### Resume training if specified
-if args.resume:
+if resume:
     start_epoch, best_r5, not_improved_num = util.resume_train(args.output_folder, model, optimizer)
     logging.info(f"Resuming training at epoch {start_epoch}")
 else:
