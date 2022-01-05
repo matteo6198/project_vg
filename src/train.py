@@ -129,7 +129,7 @@ for epoch_num in range(start_epoch, args.epochs_num):
                  f"average epoch triplet loss = {epoch_losses.mean():.4f}")
     
     # Compute recalls on validation set
-    recalls, recalls_str = test.test(args, val_ds, model)
+    recalls, recalls_str = test(args, val_ds, model)
     logging.info(f"Recalls on val set {val_ds}: {recalls_str}")
     
     is_best = recalls[1] > best_r5
