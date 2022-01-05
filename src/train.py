@@ -38,7 +38,7 @@ triplets_ds = datasets.TripletsDataset(args, args.datasets_folder, "pitts30k", "
 val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 
 #### Initialize model
-model = network.GeoLocalizationNet(args)
+model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
 
 #### Setup Optimizer and Loss
