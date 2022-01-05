@@ -52,6 +52,7 @@ start_epoch = 0
 #### Resume training if specified
 if args.resume:
     start_epoch, best_r5, not_improved_num = resume_train(args.output_folder, model, optimizer)
+    logging.info(f"Resuming training at epoch {start_epoch}")
 else:
     logging.debug(f"Loading dataset Pitts30k from folder {args.datasets_folder}")
     logging.info(f"Train query set: {triplets_ds}")
