@@ -59,7 +59,7 @@ val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
 
-if not(args.train_only):
+if not(args.test_only):
     #### Setup Optimizer and Loss
     optimizer = constants.OPTIMIZERS[args.optimizer](model.parameters(), lr=args.lr)
     criterion_triplet = nn.TripletMarginLoss(margin=args.margin, p=2, reduction="sum")
