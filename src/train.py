@@ -21,6 +21,7 @@ from test import test
 
 #### Initial setup: parser, logging...
 args = parser.parse_arguments()
+print(vars(args))
 start_time = datetime.now()
 if args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
@@ -32,6 +33,7 @@ if args.resume:
     if not(args.test_only):
         args = torch.load(join(args.output_folder, 'args.pth'))
         args.resume = resume
+        args.test_only = False
 else:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
     resume = False
@@ -59,9 +61,13 @@ val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
 
-if not(hasattr(args, 'test_only')):
+if not(args.test_only):
     #### Setup Optimizer and Loss
-    optimizer = constants.OPTIMIZERS[args.optimizer](model.parameters(), lr=args.lr)
+    try:
+        optimizer = constants.OPTIMIZERS[args.optimizer](model.parameters(), lr=args.lr)
+    except:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+        logging.info("using default optimizer")
     criterion_triplet = nn.TripletMarginLoss(margin=args.margin, p=2, reduction="sum")
 
     best_r5 = 0
