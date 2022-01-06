@@ -1,3 +1,5 @@
+import torch
+
 DEVICE = 'cuda' # 'cuda' or 'cpu'
 DRIVE_PATH = '/content/drive/MyDrive/Colab Notebooks/project/'  #folder where google drive project folder is mounted
 
@@ -11,3 +13,8 @@ ARCH_OUT_DIM = {
 }
 
 DATASETS_FOLDER = '/content'
+
+OPTIMIZERS = {
+    'adam': torch.optim.Adam,
+    'sgd':  torch.optim.SGD
+}

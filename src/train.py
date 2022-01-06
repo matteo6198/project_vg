@@ -26,10 +26,10 @@ if args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
     if not(os.path.isdir(args.output_folder)):
         raise ValueError(f"Folder {args.output_folder} does not exists")
-    if not(os.path.isfile(args.output_folder+'last_model.pth')) or not(os.path.isfile(args.output_folder+'args.pth')):
+    if not(os.path.isfile(join(args.output_folder,'last_model.pth'))) or not(os.path.isfile(join(args.output_folder,'args.pth'))):
         raise ValueError(f"Model file does not exists. You must restart training")
     resume = args.resume
-    args = torch.load(args.output_folder + 'args.pth')
+    args = torch.load(join(args.output_folder, 'args.pth'))
     args.resume = resume
 else:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
@@ -37,13 +37,17 @@ else:
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
 
-if not(os.path.isfile(args.output_folder+'/args.pth')):    
-    torch.save(args, args.output_folder + '/args.pth')
+if not(os.path.isfile(join(args.output_folder, 'args.pth'))):    
+    torch.save(args, join(args.output_folder, 'args.pth'))
     logging.info("Saved args")
 
 logging.info(f"Arguments: {vars(args)}")
 logging.info(f"The outputs are being saved in {args.output_folder}")
-logging.info(f"Using {torch.cuda.device_count()} GPUs and {multiprocessing.cpu_count()} CPUs")
+if torch.cuda.device_count() <= 0:
+    logging.info(f"WARNING RUNNING ON CPU: {multiprocessing.cpu_count()} CPUs")
+    args.device = 'cpu'
+else:
+    logging.info(f"Using {torch.cuda.device_count()} GPUs and {multiprocessing.cpu_count()} CPUs")
 
 #### Creation of Datasets
 triplets_ds = datasets.TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
@@ -54,7 +58,7 @@ model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
 
 #### Setup Optimizer and Loss
-optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+optimizer = constants.OPTIMIZERS[args.optimizer](model.parameters(), lr=args.lr)
 criterion_triplet = nn.TripletMarginLoss(margin=args.margin, p=2, reduction="sum")
 
 best_r5 = 0
