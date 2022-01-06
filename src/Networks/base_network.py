@@ -18,7 +18,11 @@ class GeoLocalizationNet(nn.Module):
         if args.net == 'GEM':
             logging.info('using GeM network')
             self.aggregation = init_gem(args)
+        elif args.net == 'NETVLAD':
+            logging.info('using NETVLAD network')
+
         else:
+            logging.info("Using default avg pool network")
             self.aggregation = nn.Sequential(L2Norm(),
                                          torch.nn.AdaptiveAvgPool2d(1),
                                          Flatten())
