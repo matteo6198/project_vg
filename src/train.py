@@ -33,6 +33,7 @@ if args.resume:
     args.resume = resume
 else:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.exp_name, start_time.strftime('%Y-%m-%d_%H-%M-%S'))
+    resume = False
 
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
