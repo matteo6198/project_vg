@@ -41,7 +41,7 @@ def parse_arguments():
     parser.add_argument("--resume", type=str, default=False, help="reload a previuos interrupted train, it shoud contain the folder of the run like default/2022-01-02_13-18-59/")
     parser.add_argument("--net", type=str, default='default', help="specific network head to use (supported only 'GEM' or 'NETVlad')")
     parser.add_argument("--out-dim", type=int, default=constants.ARCH_OUT_DIM['res18'], help='specify output dimensions (useful for GeM)')
-    parser.add_argument("--optimizer", type=str, default='adam', help='the optimizer to use (supported "adam", "sgd")', choices=constants.OPTIMIZERS.keys)
+    parser.add_argument("--optimizer", type=str, default='adam', help='the optimizer to use (supported "adam", "sgd")', choices=[k for k in constants.OPTIMIZERS])
 
     args = parser.parse_args()
     
