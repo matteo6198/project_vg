@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from Utils import constants
 
 def load_data(path):
     if not(os.path.isdir(path)):
@@ -52,13 +53,13 @@ def print_img(base_path, coords, bbox, out):
         
 
 if __name__=='__main__':
-    path = 'pitts30k/images/'
+    path = '/content/pitts30k/images/'
     coords, s = load_data(path)
     print(s)
-    print_img('pitts.png',coords, s, 'pitts_out.png')
+    print_img(constants.DRIVE_PATH+'img/pitts.png',coords, s, constants.DRIVE_PATH+'img/pitts_out.png')
 
     
-    path = 'st_lucia/images/'
+    path = '/content/st_lucia/images/'
     coords, s = load_data(path)
     print(s)
-    print_img('st_lucia.png',coords, s, 'st_lucia_out.png')
+    print_img(constants.DRIVE_PATH+'img/st_lucia.png',coords, s, constants.DRIVE_PATH+'img/st_lucia_out.png')
