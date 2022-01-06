@@ -21,9 +21,9 @@ class GeoLocalizationNet(nn.Module):
             logging.info('using GeM network')
             self.aggregation = init_gem(args)
         elif args.net == 'NETVLAD':
+            logging.info('using NETVLAD network')
             self.aggregation = nn.Sequential(L2Norm(),
                                          NetVLAD(num_clusters= 64, dim=256))
-            logging.info('using NETVLAD network')
 
         else:
             logging.info("Using default avg pool network")
