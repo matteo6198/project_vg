@@ -7,6 +7,8 @@ import torch.nn.functional as F
 
 from Networks.GeMNet import init_gem
 
+from Networks.NetVlad import NetVlad
+
 class GeoLocalizationNet(nn.Module):
     """The model is composed of a backbone and an aggregation layer.
     The backbone is a (cropped) ResNet-18, and the aggregation is a L2
@@ -19,6 +21,8 @@ class GeoLocalizationNet(nn.Module):
             logging.info('using GeM network')
             self.aggregation = init_gem(args)
         elif args.net == 'NETVLAD':
+            self.aggregation = nn.Sequential(L2Norm(),
+                                         NetVLAD(num_clusters= 64, dim=256))
             logging.info('using NETVLAD network')
 
         else:
