@@ -168,7 +168,7 @@ best_model_state_dict = torch.load(join(args.output_folder, "best_model.pth"))["
 model.load_state_dict(best_model_state_dict)
 
 
-for test_dataset in TEST_DATASETS:
+for test_dataset in constants.TEST_DATASETS:
     test_ds = datasets.BaseDataset(args, args.datasets_folder, test_dataset, "test")
     logging.info(f"Test set {test_dataset}: {test_ds}")
 
