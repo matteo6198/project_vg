@@ -83,6 +83,11 @@ if not(args.test_only):
         logging.info(f"Train query set: {triplets_ds}")
         logging.info(f"Val set: {val_ds}")
         logging.info(f"Output dimension of the model is {args.features_dim}")
+        util.save_checkpoint(args, {"epoch_num": 0, "model_state_dict": model.state_dict(),
+               "optimizer_state_dict": optimizer.state_dict(), "recalls": [0 for _ in args.recall_values], "best_r5": best_r5,
+               "not_improved_num": not_improved_num
+           }, True, filename="last_model.pth")
+        logging.info("Saved empty model")
 
     #### Training loop
     for epoch_num in range(start_epoch, args.epochs_num):
