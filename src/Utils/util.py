@@ -7,7 +7,9 @@ def save_checkpoint(args, state, is_best, filename):
     model_path = join(args.output_folder, filename)
     torch.save(state, model_path)
     if is_best:
-        shutil.copyfile(model_path, join(args.output_folder, "/best_model.pth"))
+        out = join(args.output_folder, "best_model.pth")
+        shutil.copyfile(model_path, out)
+        print(f"Saving best model to {out}")
 
 def resume_train(path, model, optimizer):
     ''' 
