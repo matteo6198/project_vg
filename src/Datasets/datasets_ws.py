@@ -14,11 +14,13 @@ from torch.utils.data.dataset import Subset
 from sklearn.neighbors import NearestNeighbors
 from torch.utils.data.dataloader import DataLoader
 
+from Utils.constants import TRANFORMATIONS
 
-base_transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+
+# base_transform = transforms.Compose([
+#     transforms.ToTensor(),
+#     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+# ])
 
 
 def path_to_pil_img(path):
@@ -81,10 +83,11 @@ class BaseDataset(data.Dataset):
         
         self.database_num = len(self.database_paths)
         self.queries_num  = len(self.queries_paths)
+        self.transformation = TRANFORMATIONS['default']
     
     def __getitem__(self, index):
         img = path_to_pil_img(self.images_paths[index])
-        img = base_transform(img)
+        img = self.transformation(img)
         return img, index
     
     def __len__(self):
@@ -128,15 +131,21 @@ class TripletsDataset(BaseDataset):
         # Recompute images_paths and queries_num because some queries might have been removed
         self.images_paths = list(self.database_paths) + list(self.queries_paths)
         self.queries_num = len(self.queries_paths)
+        try:
+            self.transformation = TRANFORMATIONS[args.augment.lower()]
+            logging.debug(f'Applying transformation {args.augment}')
+        except:
+            self.transformation = TRANFORMATIONS['default']
+            logging.debug(f'WARNING: AUGMENTATION NOT FOUND USING DEFAULT')
         
     def __getitem__(self, index):
         if self.is_inference:
             # At inference time return the single image. This is used for caching
             return super().__getitem__(index)
         query_index, best_positive_index, neg_indexes = torch.split(self.triplets_global_indexes[index], (1,1,self.negs_num_per_query))
-        query     =  base_transform(path_to_pil_img(self.queries_paths[query_index]))
-        positive  =  base_transform(path_to_pil_img(self.database_paths[best_positive_index]))
-        negatives = [base_transform(path_to_pil_img(self.database_paths[i])) for i in neg_indexes]
+        query     =  self.transformation(path_to_pil_img(self.queries_paths[query_index]))
+        positive  =  self.transformation(path_to_pil_img(self.database_paths[best_positive_index]))
+        negatives = [self.transformation(path_to_pil_img(self.database_paths[i])) for i in neg_indexes]
         images = torch.stack((query, positive, *negatives), 0)
         triplets_local_indexes = torch.empty((0,3), dtype=torch.int)
         for neg_num in range(len(neg_indexes)):

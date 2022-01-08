@@ -1,4 +1,5 @@
 import torch
+import torchvision.transforms as transforms
 
 DEVICE = 'cuda' # 'cuda' or 'cpu'
 DRIVE_PATH = '/content/drive/MyDrive/Colab Notebooks/project/'  #folder where google drive project folder is mounted
@@ -17,4 +18,17 @@ DATASETS_FOLDER = '/content'
 OPTIMIZERS = {
     'adam': torch.optim.Adam,
     'sgd':  torch.optim.SGD
+}
+
+TRANFORMATIONS = {
+    'default': transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+    'flip': transforms.Compose([transforms.ToTensor(), transforms.RandomHorizontalFlip(p=0.5), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+    'rotate': transforms.Compose([transforms.ToTensor(), transforms.RandomRotation([-30, 30]), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+    'flip_rotate':transforms.Compose([transforms.ToTensor(), transforms.RandomHorizontalFlip(p=0.5), transforms.RandomRotation([-30, 30]), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+}
+
+FEATURES_DIM = {
+    'NETVLAD':  16384,
+    'GEM':      256,
+    'OTH':      256
 }

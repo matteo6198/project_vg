@@ -43,6 +43,7 @@ def parse_arguments():
     parser.add_argument("--out-dim", type=int, default=constants.ARCH_OUT_DIM['res18'], help='specify output dimensions (useful for GeM)')
     parser.add_argument("--optimizer", type=str, default='adam', help='the optimizer to use (supported "adam", "sgd")', choices=[k for k in constants.OPTIMIZERS])
     parser.add_argument("--test_only", default=False, action='store_true', help="use this with the resume argument to load the model and test it only")
+    parser.add_argument("--augment", default='default', type=str, help='Augment images of train set', choices=[k for k in constants.TRANFORMATIONS])
 
     args = parser.parse_args()
     

@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from Networks.GeMNet import init_gem
 
 from Networks.NetVlad import NetVLAD
+from src.Utils import constants
 
 class GeoLocalizationNet(nn.Module):
     """The model is composed of a backbone and an aggregation layer.
@@ -46,10 +47,14 @@ def get_backbone(args):
     logging.debug("Train only conv4 of the ResNet-18 (remove conv5), freeze the previous ones")
     layers = list(backbone.children())[:-3]
     backbone = torch.nn.Sequential(*layers)
-    if args.net == "NETVLAD":
-        args.features_dim = 16384
-    else:
-        args.features_dim = 256  # Number of channels in conv4
+    
+    feat_dim = constants.FEATURES_DIM['OTH']
+    try:
+        feat_dim = constants.FEATURES_DIM[args.net]
+    except:
+        logging.info(f"WARNING: UNKNOWN FEATURES DIM: this net {args.net} has not predefined features dimensions...using default {constants.FEATURES_DIM['OTH']}")
+    args.features_dim = feat_dim
+
     return backbone
 
 
