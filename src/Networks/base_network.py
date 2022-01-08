@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from Networks.GeMNet import init_gem
 
 from Networks.NetVlad import NetVLAD
-from src.Utils import constants
+from Utils import constants
 
 class GeoLocalizationNet(nn.Module):
     """The model is composed of a backbone and an aggregation layer.

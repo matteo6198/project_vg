@@ -1,0 +1,10 @@
+2022-01-08 11:56:53   Saved args
+2022-01-08 11:56:53   Arguments: {'train_batch_size': 4, 'infer_batch_size': 16, 'margin': 0.1, 'epochs_num': 50, 'patience': 3, 'lr': 1e-05, 'cache_refresh_rate': 1000, 'queries_per_epoch': 5000, 'negs_num_per_query': 10, 'neg_samples_num': 1000, 'seed': 0, 'device': 'cuda', 'num_workers': 3, 'val_positive_dist_threshold': 25, 'train_positives_dist_threshold': 10, 'recall_values': [1, 5, 10, 20], 'datasets_folder': '/mnt/d/PoliTo/advanced_ml/projects/', 'exp_name': 'GEM_flip', 'resume': False, 'net': 'GEM', 'out_dim': 256, 'optimizer': 'adam', 'test_only': False, 'augment': 'flip', 'output_folder': './content/drive/MyDrive/Colab Notebooks/project/runs/GEM_flip/2022-01-08_11-56-53'}
+2022-01-08 11:56:53   The outputs are being saved in ./content/drive/MyDrive/Colab Notebooks/project/runs/GEM_flip/2022-01-08_11-56-53
+2022-01-08 11:56:54   Using 1 GPUs and 8 CPUs
+2022-01-08 11:56:55   There are 96 queries without any positives within the training set. They won't be considered as they're useless for training.
+2022-01-08 11:57:04   using GeM network
+2022-01-08 11:57:09   Train query set: < TripletsDataset, pitts30k - #database: 10000; #queries: 7320 >
+2022-01-08 11:57:09   Val set: < BaseDataset, pitts30k - #database: 10000; #queries: 7608 >
+2022-01-08 11:57:09   Output dimension of the model is 256
+2022-01-08 11:57:09   Start training epoch: 00
