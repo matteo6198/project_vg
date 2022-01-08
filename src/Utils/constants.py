@@ -15,9 +15,13 @@ ARCH_OUT_DIM = {
 
 DATASETS_FOLDER = '/content'
 
+MOMENTUM = 0.9
+def getSGD(params, lr=1e-5):
+    return torch.optim.SGD(params, lr=lr, momentum=MOMENTUM)
+    
 OPTIMIZERS = {
     'adam': torch.optim.Adam,
-    'sgd':  torch.optim.SGD
+    'sgd':  getSGD
 }
 
 TRANFORMATIONS = {
