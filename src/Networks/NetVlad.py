@@ -4,6 +4,12 @@ import torch.nn.functional as F
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
+from math import ceil
+import faiss
+from torch.utils.data import DataLoader, SubsetRandomSampler
+import logging
+from tqdm import tqdm
+
 class NetVLAD(nn.Module):
     """NetVLAD layer implementation"""
 
@@ -31,6 +37,36 @@ class NetVLAD(nn.Module):
         self.conv = nn.Conv2d(dim, num_clusters, kernel_size=(1, 1), bias=vladv2)
         self.centroids = nn.Parameter(torch.rand(num_clusters, dim))
 
+
+    def init_params(self, clsts, traindescs):
+        #TODO replace numpy ops with pytorch ops
+        if self.vladv2 == False:
+            clstsAssign = clsts / np.linalg.norm(clsts, axis=1, keepdims=True)
+            dots = np.dot(clstsAssign, traindescs.T)
+            dots.sort(0)
+            dots = dots[::-1, :] # sort, descending
+
+            self.alpha = (-np.log(0.01) / np.mean(dots[0,:] - dots[1,:])).item()
+            self.centroids = nn.Parameter(torch.from_numpy(clsts))
+            self.conv.weight = nn.Parameter(torch.from_numpy(self.alpha*clstsAssign).unsqueeze(2).unsqueeze(3))
+            self.conv.bias = None
+        else:
+            knn = NearestNeighbors(n_jobs=-1) #TODO faiss?
+            knn.fit(traindescs)
+            del traindescs
+            dsSq = np.square(knn.kneighbors(clsts, 2)[1])
+            del knn
+            self.alpha = (-np.log(0.01) / np.mean(dsSq[:,1] - dsSq[:,0])).item()
+            self.centroids = nn.Parameter(torch.from_numpy(clsts))
+            del clsts, dsSq
+
+            self.conv.weight = nn.Parameter(
+                (2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1)
+            )
+            self.conv.bias = nn.Parameter(
+                - self.alpha * self.centroids.norm(dim=1)
+            )
+
     def forward(self, x):
         N, C = x.shape[:2]
 
@@ -56,3 +92,42 @@ class NetVLAD(nn.Module):
         vlad = F.normalize(vlad, p=2, dim=1)  # L2 normalize
 
         return vlad
+
+def get_clusters(args, cluster_set,  model):
+    nDescriptors = 50000
+    nPerImage = 100
+    nIm = ceil(nDescriptors/nPerImage)
+
+    sampler = SubsetRandomSampler(np.random.choice(len(cluster_set), nIm, replace=False))
+    data_loader = DataLoader(dataset=cluster_set, 
+                num_workers=args.num_workers, batch_size=args.train_batch_size, shuffle=False, 
+                pin_memory=(args.device == 'cuda'),
+                sampler=sampler)
+
+    descriptors = np.empty([nDescriptors, args.out_dim], dtype=np.float32) 
+    
+    with torch.no_grad():
+        model.eval()
+        logging.debug("Extracting descriptors")
+        for iteration, (input, indices) in tqdm(enumerate(data_loader, 1), ncols=100, total=len(data_loader)):
+            input = input.to(args.device)
+            image_descriptors = model.backbone(input).view(input.size(0), args.out_dim, -1).permute(0, 2, 1)
+            batchix = (iteration-1)*args.train_batch_size*nPerImage
+            for ix in range(image_descriptors.size(0)):
+                # sample different location for each image in batch
+                sample = np.random.choice(image_descriptors.size(1), nPerImage, replace=False)
+                startix = batchix + ix*nPerImage
+                descriptors[startix:startix+nPerImage, :] = image_descriptors[ix, sample, :].detach().cpu().numpy()
+            del input, image_descriptors
+    
+    logging.debug("Clustering with K-means")
+    niter = 100
+    kmeans = faiss.Kmeans(args.out_dim, args.netvlad_n_clusters, niter=niter, verbose=False)
+    kmeans.train(descriptors[...])
+    centroids = kmeans.centroids
+    logging.debug('Done!')
+    return centroids, descriptors
+
+def init_netvlad(model, args, dataset):
+    centroids, descriptors = get_clusters(args, dataset, model)
+    model.aggregation.init_params(centroids, descriptors)
