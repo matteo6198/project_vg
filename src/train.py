@@ -11,6 +11,7 @@ from datetime import datetime
 from torch.utils.data.dataloader import DataLoader
 
 from Networks.NetVlad import init_netvlad
+from Networks.CRNLayer import init_CRN
 torch.backends.cudnn.benchmark= True  # Provides a speedup
 
 from Utils import util
@@ -69,7 +70,13 @@ if args.net == 'NETVLAD' and not(resume):
     init_netvlad(model, args, triplets_ds)
     triplets_ds.is_inference = False
     model = model.to(args.device)
-
+elif args.net == 'CRN' and not(resume):    
+    logging.debug("init CRN weights")
+    triplets_ds.is_inference = True
+    init_CRN(model, args, triplets_ds)
+    triplets_ds.is_inference = False
+    model = model.to(args.device)
+    
 if not(args.test_only):
     #### Setup Optimizer and Loss
     try:

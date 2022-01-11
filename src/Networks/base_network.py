@@ -19,11 +19,6 @@ class GeoLocalizationNet(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.backbone = get_backbone(args)
-        if args.use_CRN:
-            self.reweight = CRNLayer(args)
-            self.CRN = True
-        else:
-            self.CRN = False
         if args.net == 'GEM':
             logging.info('using GeM network')
             self.aggregation = init_gem(args)
@@ -34,15 +29,16 @@ class GeoLocalizationNet(nn.Module):
             except:
                 logging.info("WARNING using default NetVlad with n_clusters = 64 and output dim 256")
                 self.aggregation = NetVLAD(num_clusters=64, dim=args.features_dim)
+        elif args.net == 'CRN':
+            logging.info('Using CRN network')
+            self.aggregation = CRNLayer(args)
         else:
-            logging.info("Using default avg pool network")
+            logging.info("WARNING: Using default avg pool network")
             self.aggregation = nn.Sequential(L2Norm(),
                                          torch.nn.AdaptiveAvgPool2d(1),
                                          Flatten())
     def forward(self, x):
         x = self.backbone(x)
-        if self.CRN:
-            x = self.reweight(x)
         x = self.aggregation(x)
         return x
 

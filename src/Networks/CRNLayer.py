@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import logging
+import numpy as np
+from sklearn.neighbors import NearestNeighbors
+from Networks import NetVlad
 
 class CRNLayer(nn.Module):
     def __init__(self, args):
@@ -20,6 +23,7 @@ class CRNLayer(nn.Module):
 
     def forward(self, x):
         N, C, W, H = x.shape
+        # build contextual reweighting mask
         y = F.avg_pool2d(x, 3)
 
         o1 = self.conv1(y)
@@ -30,11 +34,43 @@ class CRNLayer(nn.Module):
         del o1,o2,o3
         y = F.interpolate(y, (W, H),mode='bilinear', align_corners=True)
         # residual
-        z = self.normalize(x)
-        soft_assign = self.conv(z).view(N, self.num_clusters, -1)
-        soft_assign = F.softmax(soft_assign, dim=1).view(N,self.num_clusters, W, H)
-        out = torch.cat((z, soft_assign * y), 1)
+        x = self.normalize(x)
+        soft_assign = self.conv(x).view(N, self.num_clusters, -1)
+        soft_assign = F.softmax(soft_assign, dim=1)
+        shape= soft_assign.shape
+        soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * y).view(shape)
+        del y
+        # NetVLAD core
+        x_flatten = x.view(N, C, -1)
+        
+        # calculate residuals to each clusters
+        out = torch.zeros([N, self.num_clusters, C], dtype=x.dtype, layout=x.layout, device=x.device)
+        for C in range(self.num_clusters): # slower than non-looped, but lower memory usage 
+            residual = x_flatten.unsqueeze(0).permute(1, 0, 2, 3) - \
+                    self.centroids[C:C+1, :].expand(x_flatten.size(-1), -1, -1).permute(1, 2, 0).unsqueeze(0)
+            residual *= soft_assign[:,C:C+1,:].unsqueeze(2)
+            out[:,C:C+1,:] = residual.sum(dim=-1)
+
+        out = F.normalize(out, p=2, dim=2)  # intra-normalization
+        out = out.view(x.size(0), -1)       # flatten
+        out = F.normalize(out, p=2, dim=1)  # L2 normalize
         return out
+
+    def init_params(self, centroids, descriptors):
+        knn = NearestNeighbors(n_jobs=-1) #TODO faiss?
+        knn.fit(descriptors)
+        del descriptors
+        dsSq = np.square(knn.kneighbors(centroids, 2)[1])
+        del knn
+        self.alpha = (-np.log(0.01) / np.mean(dsSq[:,1] - dsSq[:,0])).item()
+        self.centroids = nn.Parameter(torch.from_numpy(centroids))
+        del centroids, dsSq
+        self.conv.weight = nn.Parameter(
+            (2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1)
+        )
+        self.conv.bias = nn.Parameter(
+            - self.alpha * self.centroids.norm(dim=1)
+        )
 
 
 class L2Norm(nn.Module):
@@ -43,3 +79,7 @@ class L2Norm(nn.Module):
         self.dim = dim
     def forward(self, x):
         return F.normalize(x, p=2, dim=self.dim)
+
+def init_CRN(model, args, dataset):    
+    centroids, descriptors = NetVlad.get_clusters(args, dataset, model)
+    model.aggregation.init_params(centroids, descriptors)
