@@ -2,7 +2,7 @@ import torch
 import torchvision.transforms as transforms
 
 DEVICE = 'cuda' # 'cuda' or 'cpu'
-DRIVE_PATH = '../content/drive/MyDrive/Colab Notebooks/project/'  #folder where google drive project folder is mounted
+DRIVE_PATH = '/content/drive/MyDrive/Colab Notebooks/project/'  #folder where google drive project folder is mounted
 
 TRAIN_DATASET = 'pitts30k'
 TEST_DATASETS = ["pitts30k", "st_lucia"] # pitts30k or st_lucia this is used at TEST TIME
