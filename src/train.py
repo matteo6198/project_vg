@@ -63,7 +63,7 @@ val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
 model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
 
-if args.net == 'NETVLAD':
+if args.net == 'NETVLAD' and not(resume):
     logging.debug("init netvlad weights")
     triplets_ds.is_inference = True
     init_netvlad(model, args, triplets_ds)
