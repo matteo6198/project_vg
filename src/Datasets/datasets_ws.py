@@ -186,7 +186,7 @@ class TripletsDataset(BaseDataset):
     
     def get_best_positive_index(self, args, query_index, cache, query_features):
         positives_features = cache[self.hard_positives_per_query[query_index]]
-        faiss_index = faiss.IndexFlatL2(args.features_dim)
+        faiss_index = faiss.IndexFlatL2(args.out_dim)
         faiss_index.add(positives_features)
         # Search the best positive (within 10 meters AND nearest in features space)
         _, best_positive_num = faiss_index.search(query_features.reshape(1, -1), 1)
@@ -195,7 +195,7 @@ class TripletsDataset(BaseDataset):
     
     def get_hardest_negatives_indexes(self, args, cache, query_features, neg_samples):
         neg_features = cache[neg_samples]
-        faiss_index = faiss.IndexFlatL2(args.features_dim)
+        faiss_index = faiss.IndexFlatL2(args.out_dim)
         faiss_index.add(neg_features)
         # Search the 10 nearest negatives (further than 25 meters and nearest in features space)
         _, neg_nums = faiss_index.search(query_features.reshape(1, -1), self.negs_num_per_query)
@@ -212,7 +212,7 @@ class TripletsDataset(BaseDataset):
         database_indexes = list(range(self.database_num))
         #  Compute features for all images and store them in cache
         subset_ds = Subset(self, database_indexes + list(sampled_queries_indexes + self.database_num))
-        cache = self.compute_cache(args, model, subset_ds, (len(self), args.features_dim))
+        cache = self.compute_cache(args, model, subset_ds, (len(self), args.out_dim))
         
         # This loop's iterations could be done individually in the __getitem__(). This way is slower but clearer (and yields same results)
         for query_index in tqdm(sampled_queries_indexes, ncols=100):
