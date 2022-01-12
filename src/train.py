@@ -12,7 +12,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from Networks.NetVlad import init_netvlad
 from Networks.CRNLayer import init_CRN
-torch.backends.cudnn.benchmark= True  # Provides a speedup
+torch.backends.cudnn.benchmark = True  # Provides a speedup
 
 from Utils import util
 from Utils import parser
@@ -98,7 +98,7 @@ if not(args.test_only):
         logging.debug(f"Loading dataset Pitts30k from folder {args.datasets_folder}")
         logging.info(f"Train query set: {triplets_ds}")
         logging.info(f"Val set: {val_ds}")
-        logging.info(f"Output dimension of the model is {args.features_dim}")
+        logging.info(f"Output dimension of the model is {constants.FEATURES_DIM[args.net]}")
         util.save_checkpoint(args, {"epoch_num": 0, "model_state_dict": model.state_dict(),
                "optimizer_state_dict": optimizer.state_dict(), "recalls": [0 for _ in args.recall_values], "best_r5": best_r5,
                "not_improved_num": not_improved_num
