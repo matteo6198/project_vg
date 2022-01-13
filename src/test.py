@@ -37,7 +37,7 @@ def test(args, eval_ds, model):
     queries_features = all_features[eval_ds.database_num:]
     database_features = all_features[:eval_ds.database_num]
     
-    faiss_index = faiss.IndexFlatL2(args.features_dim)
+    faiss_index = faiss.IndexFlatL2(FEATURES_DIM[args.net])
     faiss_index.add(database_features)
     del database_features, all_features
     
