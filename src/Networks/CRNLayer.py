@@ -37,8 +37,7 @@ class CRNLayer(nn.Module):
         o2 = F.relu(self.conv2(y), inplace=True)
         o3 = F.relu(self.conv3(y), inplace=True)
         y = torch.cat((o1,o2,o3), 1)
-        y = F.relu(self.accumulate(y), inplace=True)
-        del o1,o2,o3
+        y = self.accumulate(y)
         y = F.interpolate(y, (W, H),mode='bilinear', align_corners=True)
         # residual
         x = self.normalize(x)
@@ -46,7 +45,6 @@ class CRNLayer(nn.Module):
         soft_assign = F.softmax(soft_assign, dim=1)
         shape= soft_assign.shape
         soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * y).view(shape)
-        del y
         # NetVLAD core
         x_flatten = x.view(N, C, -1)
         
