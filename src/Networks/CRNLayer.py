@@ -21,6 +21,12 @@ class CRNLayer(nn.Module):
         self.centroids = nn.Parameter(torch.rand(self.num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
+        # init conv weights
+        torch.nn.init.xavier_uniform(self.conv1.weight)
+        torch.nn.init.xavier_uniform(self.conv2.weight)
+        torch.nn.init.xavier_uniform(self.conv3.weight)
+        torch.nn.init.xavier_uniform(self.conv.weight)
+        torch.nn.init.xavier_uniform(self.accumulate.weight)
 
     def forward(self, x):
         N, C, W, H = x.shape
