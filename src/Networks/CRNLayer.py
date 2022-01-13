@@ -22,11 +22,11 @@ class CRNLayer(nn.Module):
         # update output channels
         args.features_dim += self.num_clusters
         # init conv weights
-        torch.nn.init.xavier_uniform(self.conv1.weight)
-        torch.nn.init.xavier_uniform(self.conv2.weight)
-        torch.nn.init.xavier_uniform(self.conv3.weight)
-        torch.nn.init.xavier_uniform(self.conv.weight)
-        torch.nn.init.xavier_uniform(self.accumulate.weight)
+        torch.nn.init.xavier_uniform_(self.conv1.weight)
+        torch.nn.init.xavier_uniform_(self.conv2.weight)
+        torch.nn.init.xavier_uniform_(self.conv3.weight)
+        torch.nn.init.xavier_uniform_(self.conv.weight)
+        torch.nn.init.xavier_uniform_(self.accumulate.weight)
 
     def forward(self, x):
         N, C, W, H = x.shape
