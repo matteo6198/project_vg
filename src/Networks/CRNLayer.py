@@ -18,6 +18,7 @@ class CRNLayer(nn.Module):
         self.normalize = L2Norm()
         self.num_clusters = args.netvlad_n_clusters
         self.soft_ass_conv = self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1))
+        self.centroids = nn.Parameter(torch.rand(num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
 
