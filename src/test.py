@@ -6,6 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Subset
+from Utils.constants import FEATURES_DIM
 
 
 def test(args, eval_ds, model):
@@ -18,7 +19,7 @@ def test(args, eval_ds, model):
         database_dataloader = DataLoader(dataset=database_subset_ds, num_workers=args.num_workers,
                                         batch_size=args.infer_batch_size, pin_memory=(args.device=="cuda"))
         
-        all_features = np.empty((len(eval_ds), args.features_dim), dtype="float32")
+        all_features = np.empty((len(eval_ds), FEATURES_DIM[args.net]), dtype="float32")
         for inputs, indices in tqdm(database_dataloader, ncols=100):
             features = model(inputs.to(args.device))
             features = features.cpu().numpy()
