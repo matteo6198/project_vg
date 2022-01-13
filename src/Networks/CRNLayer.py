@@ -27,11 +27,11 @@ class CRNLayer(nn.Module):
         # build contextual reweighting mask
         y = F.avg_pool2d(x, 3)
 
-        o1 = self.conv1(y)
-        o2 = self.conv2(y)
-        o3 = self.conv3(y)
+        o1 = F.relu(self.conv1(y), inplace=True)
+        o2 = F.relu(self.conv2(y), inplace=True)
+        o3 = F.relu(self.conv3(y), inplace=True)
         y = torch.cat((o1,o2,o3), 1)
-        y = self.accumulate(y)
+        y = F.relu(self.accumulate(y), inplace=True)
         del o1,o2,o3
         y = F.interpolate(y, (W, H),mode='bilinear', align_corners=True)
         # residual
