@@ -15,36 +15,29 @@ class CRNLayer(nn.Module):
 
         self.accumulate = nn.Conv2d(84, 1, (1,1))
 
-        self.normalize = L2Norm()
         self.num_clusters = args.netvlad_n_clusters
         self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1))
         self.centroids = nn.Parameter(torch.rand(self.num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
-        # init conv weights
-        torch.nn.init.xavier_uniform_(self.conv1.weight)
-        torch.nn.init.xavier_uniform_(self.conv2.weight)
-        torch.nn.init.xavier_uniform_(self.conv3.weight)
-        torch.nn.init.xavier_uniform_(self.conv.weight)
-        torch.nn.init.xavier_uniform_(self.accumulate.weight)
 
     def forward(self, x):
         N, C, W, H = x.shape
         # build contextual reweighting mask
-        y = F.avg_pool2d(x, 3)
+        y = F.avg_pool2d(x, 2)
 
         o1 = F.relu(self.conv1(y), inplace=True)
         o2 = F.relu(self.conv2(y), inplace=True)
         o3 = F.relu(self.conv3(y), inplace=True)
         y = torch.cat((o1,o2,o3), 1)
         y = self.accumulate(y)
-        y = F.interpolate(y, (W, H),mode='bilinear', align_corners=True)
+        y = F.normalize(F.interpolate(y, (W, H), mode='bilinear'), p=2, dim=1)
         # residual
-        x = self.normalize(x)
+        x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)
         soft_assign = F.softmax(soft_assign, dim=1)
         shape= soft_assign.shape
-        soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * y).view(shape)
+        soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * y).view(shape)     # element-wise multiplication of soft assign and mask
         # NetVLAD core
         x_flatten = x.view(N, C, -1)
         
@@ -70,20 +63,8 @@ class CRNLayer(nn.Module):
         self.alpha = (-np.log(0.01) / np.mean(dsSq[:,1] - dsSq[:,0])).item()
         self.centroids = nn.Parameter(torch.from_numpy(centroids))
         del centroids, dsSq
-        self.conv.weight = nn.Parameter(
-            (2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1)
-        )
-        self.conv.bias = nn.Parameter(
-            - self.alpha * self.centroids.norm(dim=1)
-        )
-
-
-class L2Norm(nn.Module):
-    def __init__(self, dim=1):
-        super().__init__()
-        self.dim = dim
-    def forward(self, x):
-        return F.normalize(x, p=2, dim=self.dim)
+        self.conv.weight = nn.Parameter((2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1))
+        self.conv.bias = nn.Parameter( - self.alpha * self.centroids.norm(dim=1))
 
 def init_CRN(model, args, dataset):    
     centroids, descriptors = NetVlad.get_clusters(args, dataset, model)
