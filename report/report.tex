@@ -1,16 +1,75 @@
-\documentclass{article}
-\usepackage{multicol}
+% CVPR 2022 Paper Template
+% based on the CVPR template provided by Ming-Ming Cheng (https://github.com/MCG-NKU/CVPR_Template)
+% modified and extended by Stefan Roth (stefan.roth@NOSPAMtu-darmstadt.de)
 
-\title{Report}
-\author{Matteo Gambino, Michele Pierro, Fabio Grillo}
-\date{January, 23, 2022}
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+%\usepackage[review]{cvpr}      % To produce the REVIEW version
+\usepackage{cvpr}              % To produce the CAMERA-READY version
+%\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{***} % *** Enter the CVPR Paper ID here
+\def\confName{ x}
+\def\confYear{2022}
+
+
 \begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{Report}
+
+\author{Matteo Gambino\\
+s287572
+\and
+Michele Pierro\\
+s287846
+\and
+Fabio Grillo\\
+s287873
+}
 \maketitle
-\begin{multicols}{2}
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+   The ABSTRACT is to be in fully justified italicized text, at the top of the left-hand column, below the author and affiliation information.
+   Use the word ``Abstract'' as the begin the main text.
+   Look at previous CVPR abstracts to get a feel for style and length.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
 \section{Introduction}
+
 \section{Related works}
 \section{Methods}
 \section{Experiments}
+\section{Ablation study}
 \section{Conclusions}
-\end{multicols}
+
+%%%%%%%%% REFERENCES
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+
 \end{document}
