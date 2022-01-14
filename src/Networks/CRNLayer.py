@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import logging
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 from Networks import NetVlad
 
 class CRNLayer(nn.Module):
@@ -24,20 +23,20 @@ class CRNLayer(nn.Module):
     def forward(self, x):
         N, C, W, H = x.shape
         # build contextual reweighting mask
-        y = F.avg_pool2d(x, 2)
+        m = F.avg_pool2d(x, 2)
 
-        o1 = F.relu(self.conv1(y), inplace=True)
-        o2 = F.relu(self.conv2(y), inplace=True)
-        o3 = F.relu(self.conv3(y), inplace=True)
-        y = torch.cat((o1,o2,o3), 1)
-        y = self.accumulate(y)
-        y = F.normalize(F.interpolate(y, (W, H), mode='bilinear'), p=2, dim=1)
+        o1 = F.relu(self.conv1(m))
+        o2 = F.relu(self.conv2(m))
+        o3 = F.relu(self.conv3(m))
+        m = torch.cat((o1,o2,o3), 1)
+        m = self.accumulate(m)
+        m = F.normalize(F.interpolate(m, (W, H), mode='bilinear'), p=2, dim=1)
         # residual
         x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)
         soft_assign = F.softmax(soft_assign, dim=1)
-        shape= soft_assign.shape
-        soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * y).view(shape)     # element-wise multiplication of soft assign and mask
+        shape = soft_assign.shape
+        soft_assign = (soft_assign.view(N,self.num_clusters, W, H) * m).view(shape)     # element-wise multiplication of soft assign and mask
         # NetVLAD core
         x_flatten = x.view(N, C, -1)
         
@@ -55,16 +54,14 @@ class CRNLayer(nn.Module):
         return out
 
     def init_params(self, centroids, descriptors):
-        knn = NearestNeighbors(n_jobs=-1) #TODO faiss?
-        knn.fit(descriptors)
-        del descriptors
-        dsSq = np.square(knn.kneighbors(centroids, 2)[1])
-        del knn
-        self.alpha = (-np.log(0.01) / np.mean(dsSq[:,1] - dsSq[:,0])).item()
+        clstsAssign = centroids / np.linalg.norm(centroids, axis=1, keepdims=True)
+        dots = np.dot(clstsAssign, descriptors.T)
+        dots.sort(0)
+        dots = dots[::-1, :] # sort, descending
+        self.alpha = (-np.log(0.01) / np.mean(dots[0,:] - dots[1,:])).item()
         self.centroids = nn.Parameter(torch.from_numpy(centroids))
-        del centroids, dsSq
-        self.conv.weight = nn.Parameter((2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1))
-        self.conv.bias = nn.Parameter( - self.alpha * self.centroids.norm(dim=1))
+        self.conv.weight = nn.Parameter(torch.from_numpy(self.alpha*clstsAssign).unsqueeze(2).unsqueeze(3))
+        self.conv.bias = None
 
 def init_CRN(model, args, dataset):    
     centroids, descriptors = NetVlad.get_clusters(args, dataset, model)
