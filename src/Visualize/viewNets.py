@@ -11,6 +11,7 @@ import torchvision.transforms as transforms
 from tqdm import tqdm
 from PIL import Image
 import numpy as np
+import math
 
 from Networks import base_network
 from Datasets import datasets_ws as datasets
@@ -32,7 +33,12 @@ def colorize(x):
     elif x.dim() == 4:
         raise ValueError("Shape too big (max 3 dim)")
     return cl
-def apply_colormap_on_image(org_im, activation, colormap_name):
+def to_0_1(x):
+    a, b = x.min(), x.max()
+    x = x / (b-a) - (b + a) / 2 
+    return x
+
+def apply_colormap_on_image(org_im, activation):
     """
         Apply heatmap on image
     Args:
@@ -41,7 +47,8 @@ def apply_colormap_on_image(org_im, activation, colormap_name):
         colormap_name (str): Name of the colormap
     """    
     t = transforms.ToPILImage()
-    activation = -activation.squeeze(0)
+    activation = to_0_1(-activation.squeeze(0))
+    # todo rescale between -1, 1
     heatmap = colorize(activation)
     heatmap = t(heatmap)
     # Apply heatmap on image
@@ -60,7 +67,7 @@ def get_class_activation_images(org_img, activation_map):
     """
     out = []
     # Grayscale activation map
-    heatmap, heatmap_on_image = apply_colormap_on_image(org_img, activation_map, 'hsv')
+    heatmap, heatmap_on_image = apply_colormap_on_image(org_img, activation_map)
     out.append((heatmap, '_Cam_Heatmap.png'))
     out.append((heatmap_on_image, '_Cam_On_Image.png'))
     return out
@@ -73,8 +80,7 @@ def save_image(im, path):
         path (str): Path to the image
     """
     if isinstance(im, (torch.Tensor)):
-        t = transforms.ToPILImage()
-        im = t(im.squeeze(0))
+        im = transforms.functional.to_pil_image(im.squeeze(0))
     im.save(path)
 
 def get_img_CRN(model, img, img_transformed):
