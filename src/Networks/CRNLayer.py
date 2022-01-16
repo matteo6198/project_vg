@@ -15,7 +15,7 @@ class CRNLayer(nn.Module):
         self.accumulate = nn.Conv2d(84, 1, (1,1))
 
         self.num_clusters = args.netvlad_n_clusters
-        self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1))
+        self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1), bias=None)
         self.centroids = nn.Parameter(torch.rand(self.num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
@@ -30,7 +30,7 @@ class CRNLayer(nn.Module):
         o3 = F.relu(self.conv3(m))
         m = torch.cat((o1,o2,o3), 1)
         m = self.accumulate(m)
-        m = F.normalize(F.interpolate(m, (W, H), mode='bilinear'), p=2, dim=1)
+        m = F.normalize(F.interpolate(m, (W, H), mode='bilinear', align_corners=False), p=2, dim=1)
         # residual
         x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)

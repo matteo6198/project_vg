@@ -21,12 +21,19 @@ from Networks import base_network
 from Datasets import datasets_ws as datasets
 from Utils import constants
 from test import test
+from Visualize import viewNets
 
 #### Initial setup: parser, logging...
 args = parser.parse_arguments()
 print(vars(args))
 start_time = datetime.now()
-if args.resume:
+if hasattr(args, 'visual') and args.visual:
+    args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
+    # args = torch.load(join(args.output_folder, 'args.pth'))
+    args.img_folder = join(args.output_folder, 'img', args.net)
+    viewNets.view(args)
+    exit()
+elif args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
     if not(os.path.isdir(args.output_folder)):
         raise ValueError(f"Folder {args.output_folder} does not exists")

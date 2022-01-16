@@ -1,5 +1,6 @@
 
 import argparse
+from unittest import defaultTestLoader
 from Utils import constants
 
 
@@ -45,6 +46,7 @@ def parse_arguments():
     parser.add_argument("--test_only", default=False, action='store_true', help="use this with the resume argument to load the model and test it only")
     parser.add_argument("--augment", default='default', type=str, help='Augment images of train set', choices=[k for k in constants.TRANFORMATIONS])
     parser.add_argument("--netvlad_n_clusters", default=64, type=int, help="Number of clusters used with NetVlad network")
+    parser.add_argument("--visual", action='store_true', default=False, help = 'set it if produce output (with test only option)')
 
     args = parser.parse_args()
     

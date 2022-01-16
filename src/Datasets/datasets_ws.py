@@ -23,6 +23,7 @@ from Utils.constants import FEATURES_DIM
 #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 # ])
 
+to_tensor = transforms.ToTensor()
 
 def path_to_pil_img(path):
     return Image.open(path).convert("RGB")
@@ -85,10 +86,14 @@ class BaseDataset(data.Dataset):
         self.database_num = len(self.database_paths)
         self.queries_num  = len(self.queries_paths)
         self.transformation = TRANFORMATIONS['default']
+        self.no_transformation = False
     
     def __getitem__(self, index):
         img = path_to_pil_img(self.images_paths[index])
-        img = self.transformation(img)
+        if not(self.no_transformation):
+            img = self.transformation(img)
+        else:
+            img = to_tensor(img)
         return img, index
     
     def __len__(self):
