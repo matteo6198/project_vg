@@ -31,7 +31,7 @@ class CRNLayer(nn.Module):
         o3 = F.relu(self.conv3(m))
         m = torch.cat((o1,o2,o3), 1)
         m = self.accumulate(m)
-        m = F.normalize(F.interpolate(m, (W, H), mode='bilinear'), p=2, dim=1)
+        m = F.interpolate(m, (W, H), mode='bilinear')
         # residual
         x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)
