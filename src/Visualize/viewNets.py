@@ -2,7 +2,7 @@ from os.path import join
 import os
 import copy
 import matplotlib.pyplot as plt
-import matplotlib.cm as mpl_color_map
+import matplotlib.cm as cm
 import torch 
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -16,32 +16,39 @@ from Networks import base_network
 from Datasets import datasets_ws as datasets
 from Utils import constants
 
+def gauss(x,a,b,c):
+    return torch.exp(-torch.pow(torch.add(x,-b),2).div(2*c*c)).mul(a)
+
+def colorize(x):
+    ''' Converts a one-channel grayscale image to a color heatmap image '''
+    if x.dim() == 2:
+        torch.unsqueeze(x, 0, out=x)
+    if x.dim() == 3:
+        cl = torch.zeros([3, x.size(1), x.size(2)])
+        cl[0] = gauss(x,.5,.6,.2) + gauss(x,1,.8,.3)
+        cl[1] = gauss(x,1,.5,.3)
+        cl[2] = gauss(x,1,.2,.3)
+        cl[cl.gt(1)] = 1
+    elif x.dim() == 4:
+        raise ValueError("Shape too big (max 3 dim)")
+    return cl
 def apply_colormap_on_image(org_im, activation, colormap_name):
     """
         Apply heatmap on image
     Args:
         org_img (PIL img): Original image
-        activation_map (numpy arr): Activation map (grayscale) 0-255
+        activation_map (numpy arr): Activation map 
         colormap_name (str): Name of the colormap
-    """
-    # Get colormap
-    color_map = mpl_color_map.get_cmap(colormap_name)
-    no_trans_heatmap = color_map(activation.squeeze(0).permute(2, 1, 0).numpy())
-    # Change alpha channel in colormap to make sure original image is displayed
-    heatmap = copy.copy(no_trans_heatmap)
-    heatmap[:, :, 3] = 0.4
-    
+    """    
     t = transforms.ToPILImage()
-
-    heatmap = torch.from_numpy(heatmap).squeeze().permute(2, 1, 0)
+    activation = -activation.squeeze(0)
+    heatmap = colorize(activation)
     heatmap = t(heatmap)
-    no_trans_heatmap = t(torch.from_numpy(no_trans_heatmap).squeeze().permute(2, 1, 0))
-    # Apply heatmap on iamge
+    # Apply heatmap on image
     org_im = t(org_im.squeeze())
-    heatmap_on_image = Image.new("RGBA", org_im.size)
-    heatmap_on_image = Image.alpha_composite(heatmap_on_image, org_im.convert('RGBA'))
-    heatmap_on_image = Image.alpha_composite(heatmap_on_image, heatmap)
-    return no_trans_heatmap, heatmap_on_image
+    heatmap = heatmap.resize(org_im.size)
+    heatmap_on_image = Image.blend(org_im, heatmap, 0.6)
+    return heatmap, heatmap_on_image
 
 def get_class_activation_images(org_img, activation_map):
     """
@@ -81,7 +88,7 @@ def get_img_CRN(model, img, img_transformed):
         o3 = F.relu(model.aggregation.conv3(m))
         m = torch.cat((o1,o2,o3), 1)
         m = model.aggregation.accumulate(m)
-        m = F.interpolate(F.normalize(F.interpolate(m, (W, H), mode='bilinear', align_corners=False), p=2, dim=1), (img.shape[2], img.shape[3]), mode='bilinear', align_corners=True)
+        m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
 
         return get_class_activation_images(img, m.to('cpu'))
 
@@ -107,10 +114,14 @@ def view(args):
         for img, idx in tqdm(visual_dl, ncols=100):
             save_image(img, join(out_dir, str(idx.item())+'.png'))
             img_transformed = constants.TRANFORMATIONS['normalize'](img)
+            imgs = []
             if args.net == 'CRN':
                 imgs = get_img_CRN(model, img, img_transformed)
-                for i, f in imgs:
-                    save_image(i, f'{out_dir}/{idx.item()}{f}')
+            else:
+                raise ValueError(f'Unknown net {args.net}')
+            
+            for i, f in imgs:
+                save_image(i, f'{out_dir}/{idx.item()}{f}')
 
 
 

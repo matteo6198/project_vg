@@ -37,7 +37,7 @@ elif args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
     if not(os.path.isdir(args.output_folder)):
         raise ValueError(f"Folder {args.output_folder} does not exists")
-    if not(os.path.isfile(join(args.output_folder,'last_model.pth'))) or not(os.path.isfile(join(args.output_folder,'args.pth'))):
+    if (not(os.path.isfile(join(args.output_folder,'last_model.pth'))) or not(os.path.isfile(join(args.output_folder,'args.pth')))) and not(args.test_only):
         raise ValueError(f"Model file does not exists. You must restart training")
     resume = args.resume
     if not(args.test_only):
