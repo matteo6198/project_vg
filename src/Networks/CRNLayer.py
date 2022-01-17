@@ -15,7 +15,8 @@ class CRNLayer(nn.Module):
         self.accumulate = nn.Conv2d(84, 1, (1,1))
 
         self.num_clusters = args.netvlad_n_clusters
-        self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1), bias=None)
+        self.conv = nn.Conv2d(args.features_dim, args.netvlad_n_clusters, kernel_size=(1, 1))
+        self.conv.bias = None
         self.centroids = nn.Parameter(torch.rand(self.num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
