@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Subset
 import torchvision.transforms as transforms
+from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
 from PIL import Image
 import numpy as np
@@ -110,6 +111,12 @@ def view(args, test_ds, predictions, model):
     query_ds = Subset(test_ds, range(eval_ds.database_num, eval_ds.database_num+num_queries_to_get))
     query_dl = DataLoader(dataset=query_ds, num_workers=args.num_workers, batch_size=1)
     predictions = predictions[:num_queries_to_get]
+    knn = NearestNeighbors(n_jobs=-1)
+    knn.fit(test_ds.database_utms)
+    _, positives = knn.radius_neighbors(test_ds.queries_utms, 
+                                     radius=args.val_positive_dist_threshold,
+                                     return_distance=True,
+                                     sort_results = True)
     # build out directory
     out_dir = join(args.img_folder, test_dataset)
     if not(os.path.isdir(out_dir)):
@@ -121,7 +128,11 @@ def view(args, test_ds, predictions, model):
         # get best prediction
         best_pred_idx = predictions[idx][0]
         best_pred_img, _ = test_ds.__getitem__(best_pred_idx)
-
+        imgs.append((best_pred_img, '_best_pred.png'))
+        # get best positive
+        best_positive_index = positives[idx][0]
+        best_positive_img, _ = test_ds.__getitem__(best_positive_index)
+        imgs.append((best_positive_img, '_nearest_img.png'))
         #save_image(img, join(out_dir, str(idx.item())+'.png'))
         img_transformed = constants.TRANFORMATIONS['normalize'](img)
         if args.net == 'CRN':
