@@ -4,9 +4,12 @@ import torch
 import logging
 import numpy as np
 from tqdm import tqdm
+from os.path import join
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Subset
 from Utils.constants import FEATURES_DIM
+from Visualize import viewNets
+from Utils import constants
 
 
 def test(args, eval_ds, model):
