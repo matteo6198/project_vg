@@ -103,12 +103,12 @@ def get_img_CRN(model, img, img_transformed):
 def view(args, test_ds, predictions, model):
     if not(os.path.isdir(args.img_folder)):
         os.makedirs(args.img_folder)
-    build_recall_graph(args)
+    #build_recall_graph(args)
 
     num_queries_to_get = min(constants.NUM_VISUALIZE, test_ds.queries_num)
 
     test_ds.no_transformation = True
-    query_ds = Subset(test_ds, range(eval_ds.database_num, eval_ds.database_num+num_queries_to_get))
+    query_ds = Subset(test_ds, range(test_ds.database_num, test_ds.database_num+num_queries_to_get))
     query_dl = DataLoader(dataset=query_ds, num_workers=args.num_workers, batch_size=1)
     predictions = predictions[:num_queries_to_get]
     knn = NearestNeighbors(n_jobs=-1)
@@ -118,12 +118,13 @@ def view(args, test_ds, predictions, model):
                                      return_distance=True,
                                      sort_results = True)
     # build out directory
-    out_dir = join(args.img_folder, test_dataset)
+    out_dir = join(args.img_folder, test_ds.dataset_name)
     if not(os.path.isdir(out_dir)):
         os.makedirs(out_dir)
     for img, idx in tqdm(query_dl, ncols=100):
         imgs = []
         imgs.append((img, '_query.png'))
+        idx -= test_ds.database_num
 
         # get best prediction
         best_pred_idx = predictions[idx][0]
@@ -136,7 +137,7 @@ def view(args, test_ds, predictions, model):
         #save_image(img, join(out_dir, str(idx.item())+'.png'))
         img_transformed = constants.TRANFORMATIONS['normalize'](img)
         if args.net == 'CRN':
-            imgs.extend(get_img_CRN(model, img, img_transformed))
+            imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
         
         for i, f in imgs:
             save_image(i, f'{out_dir}/{idx.item()}{f}')

@@ -62,6 +62,7 @@ def test(args, eval_ds, model):
 
     # visualize some results
     if hasattr(args, 'visual') and args.visual:
+        logging.debug('Saving images')
         args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
         # args = torch.load(join(args.output_folder, 'args.pth'))
         args.img_folder = join(args.output_folder, 'img', args.net)

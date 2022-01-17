@@ -27,18 +27,13 @@ from Visualize import viewNets
 args = parser.parse_arguments()
 print(vars(args))
 start_time = datetime.now()
-if hasattr(args, 'visual') and args.visual:
-    args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
-    # args = torch.load(join(args.output_folder, 'args.pth'))
-    args.img_folder = join(args.output_folder, 'img', args.net)
-    viewNets.view(args)
-    exit()
-elif args.resume:
+#### Init args
+if args.resume:
     args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
     if not(os.path.isdir(args.output_folder)):
-        raise ValueError(f"Folder {args.output_folder} does not exists")
+        raise FileNotFoundError(f"Folder {args.output_folder} does not exists")
     if (not(os.path.isfile(join(args.output_folder,'last_model.pth'))) or not(os.path.isfile(join(args.output_folder,'args.pth')))) and not(args.test_only):
-        raise ValueError(f"Model file does not exists. You must restart training")
+        raise FileNotFoundError(f"Model file does not exists. You must restart training")
     resume = args.resume
     if not(args.test_only):
         args = torch.load(join(args.output_folder, 'args.pth'))
