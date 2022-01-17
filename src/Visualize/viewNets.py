@@ -16,6 +16,7 @@ import math
 from Networks import base_network
 from Datasets import datasets_ws as datasets
 from Utils import constants
+from Visualize.build_recall_graph import build_recall_graph
 
 def gauss(x,a,b,c):
     return torch.exp(-torch.pow(torch.add(x,-b),2).div(2*c*c)).mul(a)
@@ -101,7 +102,7 @@ def get_img_CRN(model, img, img_transformed):
 def view(args):
     if not(os.path.isdir(args.img_folder)):
         os.makedirs(args.img_folder)
-
+    build_recall_graph(args)
     # load best model weights
     model = base_network.GeoLocalizationNet(args)
     best_state_dict = torch.load(join(args.output_folder, 'best_model.pth'))['model_state_dict']
