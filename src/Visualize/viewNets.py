@@ -99,37 +99,35 @@ def get_img_CRN(model, img, img_transformed):
 
         return get_class_activation_images(img, m.to('cpu'))
 
-def view(args):
+def view(args, test_ds, predictions, model):
     if not(os.path.isdir(args.img_folder)):
         os.makedirs(args.img_folder)
     build_recall_graph(args)
-    # load best model weights
-    model = base_network.GeoLocalizationNet(args)
-    best_state_dict = torch.load(join(args.output_folder, 'best_model.pth'))['model_state_dict']
-    model.load_state_dict(best_state_dict)
-    # visualize for each dataset
-    for test_dataset in constants.TEST_DATASETS:
-        test_ds = datasets.BaseDataset(args, args.datasets_folder, test_dataset, "test")
-        test_ds.no_transformation = True
-        visual_ds = Subset(test_ds, range(constants.NUM_VISUALIZE))
-        visual_dl = DataLoader(dataset=visual_ds, num_workers=args.num_workers, batch_size=1)
-        # build out directory
-        out_dir = join(args.img_folder, test_dataset)
-        if not(os.path.isdir(out_dir)):
-            os.makedirs(out_dir)
 
-        for img, idx in tqdm(visual_dl, ncols=100):
-            save_image(img, join(out_dir, str(idx.item())+'.png'))
-            img_transformed = constants.TRANFORMATIONS['normalize'](img)
-            imgs = []
-            if args.net == 'CRN':
-                imgs = get_img_CRN(model, img, img_transformed)
-            else:
-                raise ValueError(f'Unknown net {args.net}')
+    num_queries_to_get = min(constants.NUM_VISUALIZE, test_ds.queries_num)
+
+    test_ds.no_transformation = True
+    query_ds = Subset(test_ds, range(eval_ds.database_num, eval_ds.database_num+num_queries_to_get))
+    query_dl = DataLoader(dataset=query_ds, num_workers=args.num_workers, batch_size=1)
+    predictions = predictions[:num_queries_to_get]
+    # build out directory
+    out_dir = join(args.img_folder, test_dataset)
+    if not(os.path.isdir(out_dir)):
+        os.makedirs(out_dir)
+    for img, idx in tqdm(query_dl, ncols=100):
+        imgs = []
+        imgs.append((img, '_query.png'))
+
+        # get best prediction
+        best_pred_idx = predictions[idx][0]
+        best_pred_img, _ = test_ds.__getitem__(best_pred_idx)
+
+        #save_image(img, join(out_dir, str(idx.item())+'.png'))
+        img_transformed = constants.TRANFORMATIONS['normalize'](img)
+        if args.net == 'CRN':
+            imgs.extend(get_img_CRN(model, img, img_transformed))
+        
+        for i, f in imgs:
+            save_image(i, f'{out_dir}/{idx.item()}{f}')
             
-            for i, f in imgs:
-                save_image(i, f'{out_dir}/{idx.item()}{f}')
-
-
-
- 
+    test_ds.no_transformation = False

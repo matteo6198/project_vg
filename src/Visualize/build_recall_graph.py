@@ -18,7 +18,7 @@ def extract_recalls(recalls):
     return x,y
 
 def build_recall_graph(args):
-    out_dir = join(args.output_folder, 'img', 'recalls')
+    out_dir = join(args.img_folder, 'recalls')
     if not(os.path.isdir(out_dir)):
         os.makedirs(out_dir)
     recalls_dict = getRecalls(args)

@@ -56,5 +56,13 @@ def test(args, eval_ds, model):
     # Divide by the number of queries*100, so the recalls are in percentages
     recalls = recalls / eval_ds.queries_num * 100
     recalls_str = ", ".join([f"R@{val}: {rec:.1f}" for val, rec in zip(args.recall_values, recalls)])
+
+    # visualize some results
+    if hasattr(args, 'visual') and args.visual:
+        args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
+        # args = torch.load(join(args.output_folder, 'args.pth'))
+        args.img_folder = join(args.output_folder, 'img', args.net)
+        viewNets.view(args, eval_ds, predictions, model)
+
     return recalls, recalls_str
 

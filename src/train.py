@@ -63,28 +63,29 @@ if torch.cuda.device_count() <= 0:
 else:
     logging.info(f"Using {torch.cuda.device_count()} GPUs and {multiprocessing.cpu_count()} CPUs")
 
-#### Creation of Datasets
-triplets_ds = datasets.TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
-val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
-
 #### Initialize model
 model = base_network.GeoLocalizationNet(args)
 model = model.to(args.device)
-
-if args.net == 'NETVLAD' and not(resume):
-    logging.debug("init netvlad weights")
-    triplets_ds.is_inference = True
-    init_netvlad(model, args, triplets_ds)
-    triplets_ds.is_inference = False
-    model = model.to(args.device)
-elif args.net == 'CRN' and not(resume):    
-    logging.debug("init CRN weights")
-    triplets_ds.is_inference = True
-    init_CRN(model, args, triplets_ds)
-    triplets_ds.is_inference = False
-    model = model.to(args.device)
     
-if not(args.test_only):
+if not(args.test_only):    
+    #### Creation of Datasets
+    triplets_ds = datasets.TripletsDataset(args, args.datasets_folder, "pitts30k", "train", args.negs_num_per_query)
+    val_ds = datasets.BaseDataset(args, args.datasets_folder, "pitts30k", "val")
+
+    #### Init network params
+    if args.net == 'NETVLAD' and not(resume):
+        logging.debug("init netvlad weights")
+        triplets_ds.is_inference = True
+        init_netvlad(model, args, triplets_ds)
+        triplets_ds.is_inference = False
+        model = model.to(args.device)
+    elif args.net == 'CRN' and not(resume):    
+        logging.debug("init CRN weights")
+        triplets_ds.is_inference = True
+        init_CRN(model, args, triplets_ds)
+        triplets_ds.is_inference = False
+        model = model.to(args.device)
+
     #### Setup Optimizer and Loss
     try:
         optimizer = constants.OPTIMIZERS[args.optimizer](model.parameters(), lr=args.lr)
