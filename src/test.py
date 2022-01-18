@@ -61,7 +61,7 @@ def test(args, eval_ds, model):
     recalls_str = ", ".join([f"R@{val}: {rec:.1f}" for val, rec in zip(args.recall_values, recalls)])
 
     # visualize some results
-    if hasattr(args, 'visual') and args.visual:
+    if eval_ds.dataset_split == 'test' and hasattr(args, 'visual') and args.visual:
         logging.debug('Saving images')
         args.output_folder = join(constants.DRIVE_PATH, "runs", args.resume)
         # args = torch.load(join(args.output_folder, 'args.pth'))

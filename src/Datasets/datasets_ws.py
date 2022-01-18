@@ -60,6 +60,7 @@ class BaseDataset(data.Dataset):
         super().__init__()
         self.args = args
         self.dataset_name = dataset_name
+        self.dataset_split = split
         self.dataset_folder = join(datasets_folder, dataset_name, "images", split)
         if not os.path.exists(self.dataset_folder): raise FileNotFoundError(f"Folder {self.dataset_folder} does not exist")
         
