@@ -1,5 +1,4 @@
 from os.path import join
-from Utils import constants
 
 VAL_STRING = 'Recalls on val set'
 TEST_STRING = 'Recalls on < BaseDataset'

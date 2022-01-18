@@ -1,8 +1,5 @@
-from os.path import join
 import os
-import copy
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+from os.path import join
 import torch 
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -11,11 +8,6 @@ import torchvision.transforms as transforms
 from sklearn.neighbors import NearestNeighbors
 from tqdm import tqdm
 from PIL import Image
-import numpy as np
-import math
-
-from Networks import base_network
-from Datasets import datasets_ws as datasets
 from Utils import constants
 from Visualize.build_recall_graph import build_recall_graph
 
@@ -35,18 +27,17 @@ def colorize(x):
     elif x.dim() == 4:
         raise ValueError("Shape too big (max 3 dim)")
     return cl
+
 def to_0_1(x):
     a, b = x.min(), x.max()
     x = x / (b-a) - (b + a) / 2 
     return x
 
 def apply_colormap_on_image(org_im, activation):
-    """
-        Apply heatmap on image
+    """ Apply heatmap on image
     Args:
-        org_img (PIL img): Original image
-        activation_map (numpy arr): Activation map 
-        colormap_name (str): Name of the colormap
+        org_img (Tensor): Original image
+        activation_map (Tensor): Activation map 
     """    
     t = transforms.ToPILImage()
     activation = to_0_1(-activation.squeeze(0))
@@ -60,13 +51,6 @@ def apply_colormap_on_image(org_im, activation):
     return heatmap, heatmap_on_image
 
 def get_class_activation_images(org_img, activation_map):
-    """
-        Saves cam activation map and activation map on the original image
-    Args:
-        org_img (PIL img): Original image
-        activation_map (numpy arr): Activation map (grayscale) 0-255
-        file_name (str): File name of the exported image
-    """
     out = []
     # Grayscale activation map
     heatmap, heatmap_on_image = apply_colormap_on_image(org_img, activation_map)
@@ -75,8 +59,7 @@ def get_class_activation_images(org_img, activation_map):
     return out
 
 def save_image(im, path):
-    """
-        Saves a numpy matrix or PIL image as an image
+    """ Saves a torch tensor or PIL image as an image
     Args:
         im_as_arr (Numpy array): Matrix of shape DxWxH
         path (str): Path to the image
@@ -84,7 +67,6 @@ def save_image(im, path):
     if isinstance(im, (torch.Tensor)):
         im = transforms.functional.to_pil_image(im.squeeze(0))
     im.save(path)
-
 def get_img_CRN(model, img, img_transformed):
     with torch.no_grad():
         feat = model.backbone(img_transformed)
@@ -100,11 +82,19 @@ def get_img_CRN(model, img, img_transformed):
 
         return get_class_activation_images(img, m.to('cpu'))
 
+# def get_dist(p1, p2):
+#     return ((float(p1[0])-float(p2[0]))**2 + (float(p1[1])-float(p2[1]))**2) ** 0.5
+
 def view(args, test_ds, predictions, model):
     if not(os.path.isdir(args.img_folder)):
         os.makedirs(args.img_folder)
-    #build_recall_graph(args)
+    #### Generate recall graphs
+    if build_recall_graph(args):
+        print("Recall graphs generated")
+    else:
+        print("WARNING: impossible to build recall graphs")
 
+    #### Extract dataset to read images
     num_queries_to_get = min(constants.NUM_VISUALIZE, test_ds.queries_num)
 
     test_ds.no_transformation = True
@@ -117,10 +107,11 @@ def view(args, test_ds, predictions, model):
                                      radius=args.val_positive_dist_threshold,
                                      return_distance=True,
                                      sort_results = True)
-    # build out directory
+    #### build out directory
     out_dir = join(args.img_folder, test_ds.dataset_name)
     if not(os.path.isdir(out_dir)):
         os.makedirs(out_dir)
+    #### Generate images views
     for img, idx in tqdm(query_dl, ncols=100):
         imgs = []
         imgs.append((img, '_query.png'))
@@ -134,7 +125,11 @@ def view(args, test_ds, predictions, model):
         best_positive_index = positives[idx][0]
         best_positive_img, _ = test_ds.__getitem__(best_positive_index)
         imgs.append((best_positive_img, '_nearest_img.png'))
-        #save_image(img, join(out_dir, str(idx.item())+'.png'))
+        # q_pos = test_ds.queries_utms[idx]
+        # p_pos = test_ds.database_utms[best_pred_idx]
+        # v_pos = test_ds.database_utms[best_positive_index]
+        # print(f'query:{test_ds.queries_utms[idx]}, predicted pos: {test_ds.database_utms[best_pred_idx]}, nearest pos:{test_ds.database_utms[best_positive_index]}')
+        # print(f'q-p: {get_dist(p_pos, q_pos)}, q-v: {get_dist(q_pos, v_pos)}, v-p: {get_dist(p_pos, v_pos)}')
         img_transformed = constants.TRANFORMATIONS['normalize'](img)
         if args.net == 'CRN':
             imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
