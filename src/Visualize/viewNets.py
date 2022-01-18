@@ -30,7 +30,7 @@ def colorize(x):
 
 def to_0_1(x):
     a, b = x.min(), x.max()
-    x = x / (b-a) - (b + a) / 2 
+    x = ((x - (b + a) / 2) / (b-a)) * 2  
     return x
 
 def apply_colormap_on_image(org_im, activation):
@@ -40,7 +40,7 @@ def apply_colormap_on_image(org_im, activation):
         activation_map (Tensor): Activation map 
     """    
     t = transforms.ToPILImage()
-    activation = to_0_1(-activation.squeeze(0))
+    activation = to_0_1(activation.squeeze(0))
     # todo rescale between -1, 1
     heatmap = colorize(activation)
     heatmap = t(heatmap)
@@ -95,12 +95,17 @@ def view(args, test_ds, predictions, model):
         print("WARNING: impossible to build recall graphs")
 
     #### Extract dataset to read images
-    num_queries_to_get = min(constants.NUM_VISUALIZE, test_ds.queries_num)
+    idxs = []
+    if constants.NUM_VISUALIZE >= test_ds.queries_num:
+        step = 1
+    else:
+        # samples from equi-spatiated points
+        step = test_ds.queries_num // constants.NUM_VISUALIZE
+    idxs = list(range(test_ds.database_num, test_ds.database_num + test_ds.queries_num, step))
 
     test_ds.no_transformation = True
-    query_ds = Subset(test_ds, range(test_ds.database_num, test_ds.database_num+num_queries_to_get))
+    query_ds = Subset(test_ds, idxs)
     query_dl = DataLoader(dataset=query_ds, num_workers=args.num_workers, batch_size=1)
-    predictions = predictions[:num_queries_to_get]
     knn = NearestNeighbors(n_jobs=-1)
     knn.fit(test_ds.database_utms)
     _, positives = knn.radius_neighbors(test_ds.queries_utms, 
@@ -112,6 +117,7 @@ def view(args, test_ds, predictions, model):
     if not(os.path.isdir(out_dir)):
         os.makedirs(out_dir)
     #### Generate images views
+    id=0
     for img, idx in tqdm(query_dl, ncols=100):
         imgs = []
         imgs.append((img, '_query.png'))
@@ -123,6 +129,7 @@ def view(args, test_ds, predictions, model):
         imgs.append((best_pred_img, '_best_pred.png'))
         # get best positive
         best_positive_index = positives[idx][0]
+        # print(f'idx: {idx}, pos: {positives[idx][:5]}')
         best_positive_img, _ = test_ds.__getitem__(best_positive_index)
         imgs.append((best_positive_img, '_nearest_img.png'))
         # q_pos = test_ds.queries_utms[idx]
@@ -135,6 +142,7 @@ def view(args, test_ds, predictions, model):
             imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
         
         for i, f in imgs:
-            save_image(i, f'{out_dir}/{idx.item()}{f}')
+            save_image(i, f'{out_dir}/{id}{f}')
+        id += 1
             
     test_ds.no_transformation = False
