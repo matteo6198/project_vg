@@ -1,8 +1,14 @@
+from ast import parse
+from cProfile import label
 import os
+import argparse
 from os.path import join
 import matplotlib.pyplot as plt
 
-from Visualize.log_utils import getRecalls
+if __name__ == '__main__':
+    from log_utils import getRecalls
+else:
+    from Visualize.log_utils import getRecalls
 
 def make_graph(x, y, out_filename):
     plt.figure()
@@ -21,7 +27,7 @@ def build_recall_graph(args):
     if not(os.path.isfile(join(args.output_folder, 'info.log'))):
         return False
     #### Read recalls from info.log
-    recalls_dict = getRecalls(args)
+    recalls_dict = getRecalls(join(*args.output_folder.split('/')[7:]))
     if len(recalls_dict) <= 0:
         return False
     #### Build output directory
@@ -53,3 +59,44 @@ def build_recall_graph(args):
     except:
         return False
     return True
+
+def get_best_recall(recalls):        
+    r5 = [float(recs[1][1]) for recs in recalls]
+    max_r5 = max(r5)
+    best_recalls = list(filter(lambda s: float(s[1][1])==max_r5, recalls))[0]
+    return best_recalls
+
+def make_comapre_recall_graph(runs, legend, out_folder):
+    all_recalls = {'val':[], 'test_pitts30k':[], 'test_st_lucia':[]}
+    try:
+        for r in runs:
+            recalls = getRecalls(r)
+            all_recalls['val'].append(get_best_recall(recalls['val']))
+            all_recalls['test_pitts30k'].append(recalls['test'][0])
+            all_recalls['test_st_lucia'].append(recalls['test'][1])
+    except:
+        print(f'ERROR: Unable to extract recalls')
+    #### build graphs
+    for k in all_recalls:
+        recalls = all_recalls[k]
+        plt.figure()
+        for i, r in enumerate(recalls):
+            x, y = extract_recalls(r)
+            plt.plot(x, y, '*-', label=legend[i])
+            plt.xticks(x)
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(join(out_folder, str(k) + '_recalls_graph.png')) 
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Plot recall graph for the specified runs", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    # Training parameters
+    parser.add_argument("--exp_runs", type=str, nargs='+', required=True, default=[], help="Runs of the networks to plot in the form <exp_name>/<date_time> (ex crn/lr4/2022-01-14_09-44-49)")
+    parser.add_argument('--legend', type=str, nargs='+', required=True, default=[], help='The legend names to be displayed')
+    parser.add_argument('--out_dir', type=str, default='.', help='The output directory. If not specified the current directory is used')
+
+    args = parser.parse_args()
+    if len(args.exp_runs) != len(args.legend):
+        raise ValueError(f'The number of legend voices {len(args.legend)} is different from the number of runs {len(args.exp_runs)}')
+
+    make_comapre_recall_graph(args.exp_runs, args.legend, args.out_dir)
