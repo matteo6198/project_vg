@@ -41,7 +41,6 @@ def apply_colormap_on_image(org_im, activation):
     """    
     t = transforms.ToPILImage()
     activation = to_0_1(-activation.squeeze(0))
-    # todo rescale between -1, 1
     heatmap = colorize(activation)
     heatmap = t(heatmap)
     # Apply heatmap on image

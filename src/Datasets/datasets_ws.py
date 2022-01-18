@@ -86,7 +86,11 @@ class BaseDataset(data.Dataset):
         
         self.database_num = len(self.database_paths)
         self.queries_num  = len(self.queries_paths)
-        self.transformation = TRANFORMATIONS['default']
+        if hasattr(args, 'augment') and ('resize' in args.augment):
+            self.transformation = TRANFORMATIONS[args.augment]
+            logging.info(f'BaseDataset: Applying transformation {args.augment}')
+        else:
+            self.transformation = TRANFORMATIONS['default']
         self.no_transformation = False
     
     def __getitem__(self, index):
