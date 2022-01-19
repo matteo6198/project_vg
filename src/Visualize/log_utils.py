@@ -1,3 +1,8 @@
+try:
+    from Utils.constants import DRIVE_PATH
+except:
+    DRIVE_PATH = '../content/drive/MyDrive/Colab Notebooks/project/'
+    
 from os.path import join
 
 VAL_STRING = 'Recalls on val set'
@@ -12,10 +17,12 @@ def build_recall_vett(l):
     recalls_v = [(recalls[i].split(':')[0].strip(), recalls[i].split(':')[1].strip()) for i in range(len(recalls))]
     return recalls_v
 
-def getRecalls(args):
+def getRecalls(exp_run):
     # open info file
     out = {}
-    with open(join(args.output_folder, 'info.log'), 'r') as f:
+    info_filename = join(DRIVE_PATH, 'runs',  exp_run, 'info.log')
+    print(f'Reading recalls from file {info_filename}')
+    with open(info_filename, 'r') as f:
         lines = f.readlines()
         recall_lines = filter(lambda l: filter_line(l, VAL_STRING), lines)
         recalls = [build_recall_vett(l) for l in recall_lines]
