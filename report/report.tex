@@ -52,9 +52,14 @@ s287873
 
 %%%%%%%%% ABSTRACT
 \begin{abstract}
-   The ABSTRACT is to be in fully justified italicized text, at the top of the left-hand column, below the author and affiliation information.
-   Use the word ``Abstract'' as the begin the main text.
-   Look at previous CVPR abstracts to get a feel for style and length.
+   In order to predict the location of a query image by retrieving annotated photographs with 
+   similar descriptors needs an efficient and reliable generation of those descriptors. 
+   In order to accomplish that objective, is fundamental that the network focuses on portion
+   of the various images that contains useful information and at the same time ignore not 
+   informative areas like the ones containing elements like cars or pedestrians. For that 
+   reason attention layers are fundamental in the proposed network. In addition to that we 
+   are comparing state of the art techniques for the visual geolocalization task like GEM \cite{GEM}
+   and NetVLAD \cite{NETVLAD}.
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
@@ -65,7 +70,7 @@ s287873
 \section{Experiments}
  \begin{tabular}{|l|l|l|l|l|}
 \hline
-          & R@1       &  R@2    & R@10 & R20      \\
+          & R@1       &  R@2    & R@10 & R@20      \\
 \hline
 lr = 1e-3            & 81.9    & 91.8 & 94.8 & 96.8          \\
 \hline
