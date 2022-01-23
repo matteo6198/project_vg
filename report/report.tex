@@ -58,7 +58,7 @@ s287873
    of the various images that contains useful information and at the same time ignore not 
    informative areas like the ones containing elements like cars or pedestrians. For that 
    reason attention layers are fundamental in the proposed network. In addition to that we 
-   are comparing state of the art techniques for the visual geolocalization task like GEM \cite{GEM}
+   are comparing state of the art techniques for the visual geolocalization task like GeM \cite{GEM}
    and NetVLAD \cite{NETVLAD}.
 \end{abstract}
 
@@ -67,6 +67,32 @@ s287873
 
 \section{Related works}
 \section{Methods}
+Like \cite{GEM}, \cite{NETVLAD}, \cite{CRN} we have casted the problem of place recognition as the task of image
+retrieval. We have implemented 3 different networks all based on the ResNet-18 \cite{resnet} backbone
+without the fully connected layers and the last convolution layer. On the top of this backbone we 
+have inserted 4 different heads, inspired by the works of \cite{GEM}, \cite{NETVLAD}, \cite{CRN}, in order
+to generate the image descriptors. 
+\paragraph*{Base Head}
+This is the simplest head we have used and it's necessary in order to have a baseline to compare the other
+results. After the last convolution layer of ResNet-18 we have normalized the feature map and used average 
+pooling in order to generate the descriptors. This simple head tries to extract from the query the spatial
+information by comparing the average value of the features in a given area and represent the traditional way 
+to extract those descriptors.
+\paragraph*{GeM head}
+Following the work of \cite{GEM}, we have used a Generalized Mean approach in order to extract better 
+descriptors for the query image. The generalized mean we are using is defined as:
+\begin{equation}
+   f_k = ({{1}\over{X_k}} \sum_{x \in X_k} x^{p_k} ) ^ {1\over{p_k}}
+\end{equation}
+where $X_k $ represent one of the normalized features map and $p_k $ is the pooling parameter. This 
+pooling parameter is expressing how much is localized the zone of the image the network is focusing on.
+The $p_k $ parameter, although it can be learned and inserted into back propagation, it has been fixed
+and a single value is used for each activation map as suggested by \cite{GEM}. We have
+inserted a fully connected layer that takes as input the pooled features in order to whiten the image
+descriptors since it has been shown by \cite{GEM} that this approach is providing better results than
+using other strategies like PCA.
+\paragraph*{NetVLAD head}
+\paragraph*{CRN head}
 \section{Experiments}
  \begin{tabular}{|l|l|l|l|l|}
 \hline
