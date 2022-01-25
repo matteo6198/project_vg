@@ -31,7 +31,7 @@ TRANFORMATIONS = {
     'rotate': transforms.Compose([transforms.ToTensor(), transforms.RandomRotation([-30, 30]), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
     'flip_rotate':transforms.Compose([transforms.ToTensor(), transforms.RandomHorizontalFlip(p=0.5), transforms.RandomRotation([-30, 30]), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
     'color_jitter': transforms.Compose([transforms.ColorJitter(0.7,0.5,0.5,0.5), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
-    'random_erasing': transforms.Compose([transforms.RandomErasing(p=0.5), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
+    'random_erasing': transforms.Compose([transforms.ToTensor(), transforms.RandomErasing(p=0.5), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
     'resize_2x': transforms.Compose([transforms.Resize((960, 1280), interpolation=3), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]),
     'resize_0.5x': transforms.Compose([transforms.Resize((240, 320), interpolation=3), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 }
