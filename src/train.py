@@ -45,6 +45,7 @@ else:
 
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
+torch.multiprocessing.set_start_method('spawn')
 
 if not(os.path.isfile(join(args.output_folder, 'args.pth'))):    
     torch.save(args, join(args.output_folder, 'args.pth'))
