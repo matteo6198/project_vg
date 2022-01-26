@@ -9,6 +9,7 @@ from tqdm import tqdm
 from PIL import Image
 from os.path import join
 import torchvision.transforms as t
+from tqdm import tqdm
 
 TRANSFORMS = {
     '1.5x': t.Resize((720, 960), interpolation=3),
@@ -25,7 +26,7 @@ def path_to_pil_img(path):
 
 def resize_dataset(path, transforms):
     paths = glob(join(path, "**", "*.jpg"), recursive=True)
-    for p in paths:
+    for p in tqdm(paths):
         img = path_to_pil_img(p)
         t_img = TRANSFORMS[transforms](img)
         t_img.save(p)
