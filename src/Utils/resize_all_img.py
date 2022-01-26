@@ -26,7 +26,6 @@ def path_to_pil_img(path):
 def resize_dataset(path, transforms):
     paths = glob(join(path, "**", "*.jpg"), recursive=True)
     for p in paths:
-        print(p)
         img = path_to_pil_img(p)
         t_img = TRANSFORMS[transforms](img)
         t_img.save(p)
