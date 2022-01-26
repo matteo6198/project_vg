@@ -94,11 +94,10 @@ class BaseDataset(data.Dataset):
         self.no_transformation = False
     
     def __getitem__(self, index):
-        img = path_to_pil_img(self.images_paths[index])
+        img = transforms.functional.to_tensor(path_to_pil_img(self.images_paths[index]))
+        img = img.to(self.args.device)
         if not(self.no_transformation):
             img = self.transformation(img)
-        else:
-            img = to_tensor(img)
         return img, index
     
     def __len__(self):
@@ -154,9 +153,9 @@ class TripletsDataset(BaseDataset):
             # At inference time return the single image. This is used for caching
             return super().__getitem__(index)
         query_index, best_positive_index, neg_indexes = torch.split(self.triplets_global_indexes[index], (1,1,self.negs_num_per_query))
-        query     =  self.transformation(path_to_pil_img(self.queries_paths[query_index]))
-        positive  =  self.transformation(path_to_pil_img(self.database_paths[best_positive_index]))
-        negatives = [self.transformation(path_to_pil_img(self.database_paths[i])) for i in neg_indexes]
+        query     =  self.transformation(transforms.functional.to_tensor(path_to_pil_img(self.queries_paths[query_index])).to(self.args.device))
+        positive  =  self.transformation(transforms.functional.to_tensor(path_to_pil_img(self.database_paths[best_positive_index])).to(self.args.device))
+        negatives = [self.transformation(transforms.functional.to_tensor(path_to_pil_img(self.database_paths[i])).to(self.args.device)) for i in neg_indexes]
         images = torch.stack((query, positive, *negatives), 0)
         triplets_local_indexes = torch.empty((0,3), dtype=torch.int)
         for neg_num in range(len(neg_indexes)):
