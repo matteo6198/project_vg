@@ -1,6 +1,7 @@
 import os
 import math
 import torch
+torch.multiprocessing.set_start_method('spawn')
 import logging
 import numpy as np
 from tqdm import tqdm
@@ -12,7 +13,6 @@ from torch.utils.data.dataloader import DataLoader
 
 from Networks.NetVlad import init_netvlad
 from Networks.CRNLayer import init_CRN
-torch.multiprocessing.set_start_method('spawn')
 torch.backends.cudnn.benchmark = True  # Provides a speedup
 
 from Utils import util
