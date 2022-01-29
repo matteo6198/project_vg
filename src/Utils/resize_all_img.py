@@ -13,7 +13,8 @@ from tqdm import tqdm
 
 TRANSFORMS = {
     '1.25x': t.Resize((600, 800), interpolation=3),
-    '0.75x': t.Resize((360, 480), interpolation=3)
+    '0.75x': t.Resize((360, 480), interpolation=3),
+    '0.5x': t.Resize((240, 320), interpolation=3),
 }
 
 DATASETS_FOLDERS =[
