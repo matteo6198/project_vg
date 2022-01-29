@@ -93,6 +93,15 @@ descriptors since it has been shown by \cite{GEM} that this approach is providin
 using other strategies like PCA.
 \paragraph*{NetVLAD head}
 \paragraph*{CRN head}
+Seen the results provided from the previous implemented heads and the success of the attention layers to make 
+a network focus on relevant only parts of an image, we have decided to add an attention layer at the NetVLAD
+head following the approach proposed by \cite{CRN}. This is perfectly integreated in the NetVlad architecture and
+it has the duty to produce a map that rescales the weights produced by the soft assignment step of the NetVLAD layer.
+This layer is composed by an initial average pooling sub-layer
+that has the duty to reduce the dimensionality of the feature maps produced by the backbone. 
+Differently from what specified in \cite{CRN}, it is not reducing the features maps to a fixed 
+size but it is simply reducing by a half the dimensions of the features. In order to capture features at different
+spatial resolutions, 3 convolution filters (with kernel sizes respectively of 3, 5, 7) are applied to the pooled features.
 \section{Experiments}
  \begin{tabular}{|l|l|l|l|l|}
 \hline
