@@ -47,6 +47,7 @@ def parse_arguments():
     parser.add_argument("--augment", default='default', type=str, help='Augment images of train set', choices=[k for k in constants.TRANFORMATIONS])
     parser.add_argument("--netvlad_n_clusters", default=64, type=int, help="Number of clusters used with NetVlad network")
     parser.add_argument("--visual", action='store_true', default=False, help = 'set it if produce output (with test only option)')
+    parser.add_argument("--whithen", action='store_true', default=False, help='Enables the whithening of the output for CRN head')
 
     args = parser.parse_args()
     

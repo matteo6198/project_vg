@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import logging
 import numpy as np
 from Networks import NetVlad
+from Utils.constants import FEATURES_DIM
 
 class CRNLayer(nn.Module):
     def __init__(self, args):
@@ -20,6 +21,11 @@ class CRNLayer(nn.Module):
         self.centroids = nn.Parameter(torch.rand(self.num_clusters, args.features_dim))
         # update output channels
         args.features_dim += self.num_clusters
+        # whithen 
+        if hasattr(args, 'whithen') and args.whithen:
+            logging.debug("Using whithening for CRN")
+            self.whithen = nn.Linear(FEATURES_DIM['CRN'], FEATURES_DIM['CRN'], bias=True)
+
 
     def forward(self, x):
         N, C, W, H = x.shape
@@ -51,6 +57,8 @@ class CRNLayer(nn.Module):
 
         out = F.normalize(out, p=2, dim=2)  # intra-normalization
         out = out.view(x.size(0), -1)       # flatten
+        if hasattr(self, 'whithen'):
+            out = self.whithen(out)
         out = F.normalize(out, p=2, dim=1)  # L2 normalize
         return out
 
