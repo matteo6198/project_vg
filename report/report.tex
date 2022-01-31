@@ -58,27 +58,31 @@ s287873
    of the various images that contains useful information and at the same time ignore not 
    informative areas like the ones containing elements like cars or pedestrians. For that 
    reason attention layers are fundamental in the proposed network. In addition to that we 
-   are comparing state of the art techniques for the visual geolocalization task like GeM \cite{GEM}
-   and NetVLAD \cite{NETVLAD}.
+   are comparing state of the art techniques for the visual geolocalization task like GeM \cite{GEM}, 
+   NetVLAD \cite{NETVLAD} and CRN \cite{CRN}. The code used is publicly available 
+   \href{https://github.com/matteo6198/project_visual_geolocalization}{here}
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
 \section{Introduction}
 
 \section{Related works}
+
 \section{Methods}
 Like \cite{GEM}, \cite{NETVLAD}, \cite{CRN} we have casted the problem of place recognition as the task of image
 retrieval. We have implemented 3 different networks all based on the ResNet-18 \cite{resnet} backbone
 without the fully connected layers and the last convolution layer. On the top of this backbone we 
 have inserted 4 different heads, inspired by the works of \cite{GEM}, \cite{NETVLAD}, \cite{CRN}, in order
 to generate the image descriptors. 
-\paragraph*{Base Head}
+
+\subsection{Base Head}
 This is the simplest head we have used and it's necessary in order to have a baseline to compare the other
 results. After the last convolution layer of ResNet-18 we have normalized the feature map and used average 
 pooling in order to generate the descriptors. This simple head tries to extract from the query the spatial
 information by comparing the average value of the features in a given area and represent the traditional way 
 to extract those descriptors.
-\paragraph*{GeM head}
+
+\subsection{GeM head}
 Following the work of \cite{GEM}, we have used a Generalized Mean approach in order to extract better 
 descriptors for the query image. The generalized mean we are using is defined as:
 \begin{equation}
@@ -91,30 +95,110 @@ and a single value is used for each activation map as suggested by \cite{GEM}. W
 inserted a fully connected layer that takes as input the pooled features in order to whiten the image
 descriptors since it has been shown by \cite{GEM} that this approach is providing better results than
 using other strategies like PCA.
-\paragraph*{NetVLAD head}
-\paragraph*{CRN head}
+
+\subsection{NetVLAD head}
+
+\subsection{CRN head}
 Seen the results provided from the previous implemented heads and the success of the attention layers to make 
 a network focus on relevant only parts of an image, we have decided to add an attention layer at the NetVLAD
-head following the approach proposed by \cite{CRN}. This is perfectly integreated in the NetVlad architecture and
+head following the approach proposed by \cite{CRN}. This is perfectly integrated in the NetVLAD architecture and
 it has the duty to produce a map that rescales the weights produced by the soft assignment step of the NetVLAD layer.
 This layer is composed by an initial average pooling sub-layer
 that has the duty to reduce the dimensionality of the feature maps produced by the backbone. 
 Differently from what specified in \cite{CRN}, it is not reducing the features maps to a fixed 
 size but it is simply reducing by a half the dimensions of the features. In order to capture features at different
-spatial resolutions, 3 convolution filters (with kernel sizes respectively of 3, 5, 7) are applied to the pooled features.
+spatial resolutions, $3$ convolution filters (with kernel sizes respectively of $3$, $5$, $7$) are applied to the pooled features.
+The  output of those filter is concatenated and an additional $1x1$ convolution filter is used in order to accumulate the 
+features produced. The resulting mask is then upsampled, in order to restore the original features map dimensionality,
+by using a bilinear interpolator.This results into a mask that is used as to re-weight the features produced by the soft assignment specified
+into the NetVLAD description as showed in figure \ref{fig:CRN:ark} into the context modulation layer. This layer is 
+performing the product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
+in the standard NetVLAD core instead of the soft-assignment scores. 
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.3\textwidth]{img/CRN.png}
+   \caption{The architecture of the CRN head.}
+   \label{fig:CRN:ark}
+\end{figure}
+
 \section{Experiments}
- \begin{tabular}{|l|l|l|l|l|}
+In this section we evaluate the results obtained by the implemented heads and the selection of best hyper-parameters will be discussed.
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/pitts_out.png}
+      \caption{Pitts30k}
+      \label{fig:datasets:pitts30k}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/st_lucia_out.png}
+      \begin{minipage}{1cm}
+         \vfill
+      \end{minipage}
+      \vspace{0.2cm}
+      \caption{St. Lucia}
+      \label{fig:datasets:st_lucia}
+   \end{subfigure}
+   \caption{The location of the images contained in both the pitts30k \ref{fig:datasets:pitts30k} dataset and the St. Lucia \ref{fig:datasets:st_lucia} dataset.}
+   \label{fig:datasets}
+\end{figure}
+
+\paragraph{Datasets}
+The experiments have been run on the pitts30k dataset \cite{NETVLAD} that is containing 3 different predefined splits, respectively for 
+training, validation and testing, composed by $10k$ images each. Those are images taken in the city of Pittsburgh from the Google street
+view images. In addition, also the St. Lucia dataset \cite{st_lucia} has been used only for testing the models trained on the pitts30k dataset.
+The location of the images contained in both datasets can be seen in figure \ref{fig:datasets}.
+
+\paragraph{Metric adopted}
+Those results have been obtained by evaluating the models by using a standard evaluation procedure for place recognition.
+A given query image is said to be correctly localized if at least one of the $N$ retrieved images is placed at a distance lower
+or equal to $TTD$ from the ground truth position. This distance is set, if not differently specified, to $25$ meters. After
+that we are calculating the percentage of correctly classified images for different values of $N$ (indicated with $R@N$).  
+
+\subsection{Comparison among the proposed heads}
+The results of comparison between the various proposed heads are reported in table \ref{tab:base_results}. Those results have 
+been obtained on the pitts30k test set. As it's possible to notice the head that is giving best results is the CRN and that clarily
+shows that adding attention is essential for improving the quality of generated descriptors. It's important to notice also how 
+the results are influenced by the number of produced descriptors. In fact both the NetVLAD and the CRN head are generating much 
+more descriptors with respect to the GeM and the base heads and this seems correlated to higher recalls. Since the CRN and the NetVLAD
+heads are outperforming the other ones, we will focus more on those 2 during the rest of this section.
+
+\begin{table}
+   \centering
+\begin{tabular}{|l|c|c|c|c|c|}
 \hline
-          & R@1       &  R@2    & R@10 & R@20      \\
+         & Descs.&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
+Base     & 256   &         60.1   &         80.6   &          87.4   &          91.7   \\
+GeM      & 256   &         71.6   &         87.0   &          91.0   &          94.0   \\
+NetVLAD  & 16384 &         79.1   &         89.3   &          92.3   &          94.4   \\ \hline
+CRN*     & 16384 &\textbf{81.7}  & \textbf{90.7}  &  \textbf{93.4}  &  \textbf{95.3}  \\\hline
+\end{tabular}
+\caption{Results on the pitts30k test set obtained with the various heads compared with the base head. The number of generated descriptors 
+is also shown in the column Descs.}
+\label{tab:base_results}
+\end{table}
+
+\begin{table}
+   \centering
+ \begin{tabular}{|l|c|c|c|c|}
 \hline
-lr = 1e-3            & 81.9    & 91.8 & 94.8 & 96.8          \\
-\hline
-lr = 1e-4            & 82.2    & 93.0 & \textbf{95.4} & \textbf{97.1}          \\
-\hline
-lr = 1e-5            & \textbf{83.5}    & \textbf{93.1} & 94.3 & \textbf{97.1}          \\
+          &          $R@1$  &        $R@5$  &        $R@10$ &        $R@20$   \\ \hline     
+lr = 1e-3 &         81.9    &         91.8  &         92.5  &         94.7       \\
+lr = 1e-4 &         82.2    &         93.0  & \textbf{95.4} & \textbf{97.1}  \\    
+lr = 1e-5 & \textbf{83.5}   & \textbf{93.1} &         94.3  & \textbf{97.1}          \\
 \hline
 \end{tabular}
+\caption{Results obtained with the NetVLAD head on the pitts30k validation set with different learning rates}
+\label{tab:NETVLAD:lr}
+\end{table}
+
 \section{Ablation study}
+
 \section{Conclusions}
 
 %%%%%%%%% REFERENCES
