@@ -38,6 +38,7 @@ FEATURES_DIM = {
     'NETVLAD':  16384,
     'GEM':      256,
     'CRN':      16384,
+    'CRN2':      16384,
     'OTH':      256
 }
 

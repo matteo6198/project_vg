@@ -29,8 +29,8 @@ class GeoLocalizationNet(nn.Module):
             except:
                 logging.info("WARNING using default NetVlad with n_clusters = 64 and output dim 256")
                 self.aggregation = NetVLAD(num_clusters=64, dim=args.features_dim)
-        elif args.net == 'CRN':
-            logging.info('Using CRN network')
+        elif args.net == 'CRN' or args.net == 'CRN2':
+            logging.info(f'Using {args.net} network')
             self.aggregation = CRNLayer(args)
         else:
             logging.info("WARNING: Using default avg pool network")

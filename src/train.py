@@ -74,8 +74,8 @@ if not(args.test_only):
         init_netvlad(model, args, triplets_ds)
         triplets_ds.is_inference = False
         model = model.to(args.device)
-    elif args.net == 'CRN' and not(resume):    
-        logging.debug("init CRN weights")
+    elif (args.net == 'CRN' or args.net == 'CRN2') and not(resume):    
+        logging.debug(f"init {args.net} weights")
         triplets_ds.is_inference = True
         init_CRN(model, args, triplets_ds)
         triplets_ds.is_inference = False

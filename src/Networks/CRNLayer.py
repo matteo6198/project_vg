@@ -9,15 +9,21 @@ from Utils.constants import FEATURES_DIM
 class CRNLayer(nn.Module):
     def __init__(self, args):
         super().__init__()
-        self.conv1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
-        self.conv2_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
-        self.conv3_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
+        if args.net == 'CRN2':
+            self.crn2 = True
+            self.conv1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
+            self.conv2_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
+            self.conv3_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
 
-        self.conv2_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
-        self.conv3_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
-        
-        self.conv3_3 = nn.Conv2d(32, 20, (3,3), padding=2, dilation=2)
+            self.conv2_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
+            self.conv3_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
 
+            self.conv3_3 = nn.Conv2d(32, 20, (3,3), padding=2, dilation=2)
+        else:
+            self.crn2 = False
+            self.conv1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=1)
+            self.conv2 = nn.Conv2d(args.features_dim, 32, (5,5), padding=2)
+            self.conv3 = nn.Conv2d(args.features_dim, 20, (7,7), padding=3)
         self.accumulate = nn.Conv2d(84, 1, (1,1))
 
         self.num_clusters = args.netvlad_n_clusters
@@ -30,14 +36,20 @@ class CRNLayer(nn.Module):
     def forward(self, x):
         N, C, W, H = x.shape
         # build contextual reweighting mask
-        #m = F.avg_pool2d(x, 2)
+        if hasattr(self, 'crn2') and self.crn2:
+            o1 = F.relu(self.conv1(x))      # 3x3 filter 
+            o2 = F.relu(self.conv2_2(F.relu(self.conv2_1(x))))     # equivalent to 5x5 filter
+            o3 = F.relu(self.conv3_3(F.relu(self.conv3_2(F.relu(self.conv3_1(x))))))     # receptive field 7x7 filter
+        else:
+            m = F.avg_pool2d(x, 2)
+            o1 = F.relu(self.conv1(m))
+            o2 = F.relu(self.conv2(m))
+            o3 = F.relu(self.conv3(m))
 
-        o1 = F.relu(self.conv1(x))      # 3x3 filter 
-        o2 = F.relu(self.conv2_2(F.relu(self.conv2_1(x))))     # equivalent to 5x5 filter
-        o3 = F.relu(self.conv3_3(F.relu(self.conv3_2(F.relu(self.conv3_1(x))))))     # receptive field 7x7 filter
         m = torch.cat((o1, o2, o3), 1)
         m = self.accumulate(m)
-        #m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
+        if not(hasattr(self, 'crn2')) or not(self.crn2):
+            m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
         # residual
         x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)
