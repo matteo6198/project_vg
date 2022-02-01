@@ -25,7 +25,7 @@ Then install the required packages
 
 and finally run
 
-```python3 src/train.py --datasets_folder path/to/folder/containing/pitts30k```
+```python3 src/train.py --datasets_folder path/to/folder/containing/pitts30k --net CRN```
 
 This will train, validate, and test the model on Pitts30k and it will also test on St. Lucia dataset.
 
