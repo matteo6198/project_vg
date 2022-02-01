@@ -46,7 +46,7 @@ else:
 commons.setup_logging(args.output_folder)
 commons.make_deterministic(args.seed)
 
-if not(os.path.isfile(join(args.output_folder, 'args.pth'))):    
+if not(os.path.isfile(join(args.output_folder, 'args.pth'))) and not(args.test_only):    
     torch.save(args, join(args.output_folder, 'args.pth'))
     logging.info("Saved args")
 
