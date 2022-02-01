@@ -67,18 +67,24 @@ def save_image(im, path):
     if isinstance(im, (torch.Tensor)):
         im = transforms.functional.to_pil_image(im.squeeze(0))
     im.save(path)
-def get_img_CRN(model, img, img_transformed):
+def get_img_CRN(model, img, img_transformed, net):
     with torch.no_grad():
         feat = model.backbone(img_transformed)
         N, C, W, H = feat.shape
         # build contextual reweighting mask
-        m = F.avg_pool2d(feat, 2)
-        o1 = F.relu(model.aggregation.conv1(m))
-        o2 = F.relu(model.aggregation.conv2(m))
-        o3 = F.relu(model.aggregation.conv3(m))
+        if net=='CRN2':
+            o1 = F.relu(model.aggregation.conv1(feat))      # 3x3 filter 
+            o2 = F.relu(model.aggregation.conv2_2(F.relu(model.aggregation.conv2_1(feat))))     # equivalent to 5x5 filter
+            o3 = F.relu(model.aggregation.conv3_3(F.relu(model.aggregation.conv3_2(F.relu(model.aggregation.conv3_1(feat))))))     # receptive field 7x7 filter
+        else:
+            m = F.avg_pool2d(feat, 2)
+            o1 = F.relu(model.aggregation.conv1(m))
+            o2 = F.relu(model.aggregation.conv2(m))
+            o3 = F.relu(model.aggregation.conv3(m))
         m = torch.cat((o1,o2,o3), 1)
         m = model.aggregation.accumulate(m)
-        m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
+        if net == 'CRN':
+            m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
 
         return get_class_activation_images(img, m.to('cpu'))
 
@@ -139,8 +145,8 @@ def view(args, test_ds, predictions, model):
             # print(f'query:{test_ds.queries_utms[idx]}, predicted pos: {test_ds.database_utms[best_pred_idx]}, nearest pos:{test_ds.database_utms[best_positive_index]}')
             # print(f'q-p: {get_dist(p_pos, q_pos)}, q-v: {get_dist(q_pos, v_pos)}, v-p: {get_dist(p_pos, v_pos)}')
             img_transformed = constants.TRANFORMATIONS['normalize'](img)
-            if args.net == 'CRN':
-                imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
+            if args.net == 'CRN' or args.net == 'CRN2':
+                imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)), args.net)
 
             for i, f in imgs:
                 save_image(i, f'{out_dir}/{id}{f}')
