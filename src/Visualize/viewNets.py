@@ -119,30 +119,34 @@ def view(args, test_ds, predictions, model):
     #### Generate images views
     id=0
     for img, idx in tqdm(query_dl, ncols=100):
-        imgs = []
-        imgs.append((img, '_query.png'))
-        idx -= test_ds.database_num
+        try:
+            imgs = []
+            imgs.append((img, '_query.png'))
+            idx -= test_ds.database_num
 
-        # get best prediction
-        best_pred_idx = predictions[idx][0]
-        best_pred_img, _ = test_ds.__getitem__(best_pred_idx)
-        imgs.append((best_pred_img, '_best_pred.png'))
-        # get best positive
-        best_positive_index = positives[idx][0]
-        # print(f'idx: {idx}, pos: {positives[idx][:5]}')
-        best_positive_img, _ = test_ds.__getitem__(best_positive_index)
-        imgs.append((best_positive_img, '_nearest_img.png'))
-        # q_pos = test_ds.queries_utms[idx]
-        # p_pos = test_ds.database_utms[best_pred_idx]
-        # v_pos = test_ds.database_utms[best_positive_index]
-        # print(f'query:{test_ds.queries_utms[idx]}, predicted pos: {test_ds.database_utms[best_pred_idx]}, nearest pos:{test_ds.database_utms[best_positive_index]}')
-        # print(f'q-p: {get_dist(p_pos, q_pos)}, q-v: {get_dist(q_pos, v_pos)}, v-p: {get_dist(p_pos, v_pos)}')
-        img_transformed = constants.TRANFORMATIONS['normalize'](img)
-        if args.net == 'CRN':
-            imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
-        
-        for i, f in imgs:
-            save_image(i, f'{out_dir}/{id}{f}')
-        id += 1
+            # get best prediction
+            best_pred_idx = predictions[idx][0]
+            best_pred_img, _ = test_ds.__getitem__(best_pred_idx)
+            imgs.append((best_pred_img, '_best_pred.png'))
+            # get best positive
+            best_positive_index = positives[idx][0]
+            # print(f'idx: {idx}, pos: {positives[idx][:5]}')
+            best_positive_img, _ = test_ds.__getitem__(best_positive_index)
+            imgs.append((best_positive_img, '_nearest_img.png'))
+            # q_pos = test_ds.queries_utms[idx]
+            # p_pos = test_ds.database_utms[best_pred_idx]
+            # v_pos = test_ds.database_utms[best_positive_index]
+            # print(f'query:{test_ds.queries_utms[idx]}, predicted pos: {test_ds.database_utms[best_pred_idx]}, nearest pos:{test_ds.database_utms[best_positive_index]}')
+            # print(f'q-p: {get_dist(p_pos, q_pos)}, q-v: {get_dist(q_pos, v_pos)}, v-p: {get_dist(p_pos, v_pos)}')
+            img_transformed = constants.TRANFORMATIONS['normalize'](img)
+            if args.net == 'CRN':
+                imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)))
+
+            for i, f in imgs:
+                save_image(i, f'{out_dir}/{id}{f}')
+        except:
+            print(f"Error on visualizing image {id}")
+        finally:
+            id += 1
             
     test_ds.no_transformation = False
