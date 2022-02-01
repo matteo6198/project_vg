@@ -10,8 +10,13 @@ class CRNLayer(nn.Module):
     def __init__(self, args):
         super().__init__()
         self.conv1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
-        self.conv2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
-        self.conv3 = nn.Conv2d(32, 20, (3,3), padding=2, dilation=2)
+        self.conv2_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
+        self.conv3_1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=2, dilation=2)
+
+        self.conv2_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
+        self.conv3_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
+        
+        self.conv3_3 = nn.Conv2d(32, 20, (3,3), padding=2, dilation=2)
 
         self.accumulate = nn.Conv2d(84, 1, (1,1))
 
@@ -33,8 +38,8 @@ class CRNLayer(nn.Module):
         #m = F.avg_pool2d(x, 2)
 
         o1 = F.relu(self.conv1(x))      # 3x3 filter 
-        o2 = F.relu(self.conv2(o1))     # equivalent to 5x5 filter
-        o3 = F.relu(self.conv3(o2))     # receptive field 7x7 filter
+        o2 = F.relu(self.conv2_2(F.relu(self.conv2_1(x))))     # equivalent to 5x5 filter
+        o3 = F.relu(self.conv3_3(F.relu(self.conv3_2(F.relu(self.conv3_1(x))))))     # receptive field 7x7 filter
         m = torch.cat((o1, o2, o3), 1)
         m = self.accumulate(m)
         #m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
