@@ -150,8 +150,8 @@ def view(args, test_ds, predictions, model):
 
             for i, f in imgs:
                 save_image(i, f'{out_dir}/{id}{f}')
-        except:
-            print(f"Error on visualizing image {id}")
+        except Exception as e:
+            print(f"Error on visualizing image {id}: {str(e)}")
         finally:
             id += 1
             
