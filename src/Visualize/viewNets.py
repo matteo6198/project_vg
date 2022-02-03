@@ -146,7 +146,7 @@ def view(args, test_ds, predictions, model):
             # print(f'q-p: {get_dist(p_pos, q_pos)}, q-v: {get_dist(q_pos, v_pos)}, v-p: {get_dist(p_pos, v_pos)}')
             img_transformed = constants.TRANFORMATIONS['normalize'](img)
             if args.net == 'CRN' or args.net == 'CRN2':
-                imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device)), args.net)
+                imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device), args.net))
 
             for i, f in imgs:
                 save_image(i, f'{out_dir}/{id}{f}')
