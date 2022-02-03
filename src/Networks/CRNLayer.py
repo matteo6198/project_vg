@@ -19,7 +19,6 @@ class CRNLayer(nn.Module):
             self.conv3_2 = nn.Conv2d(32, 32, (3,3), padding=2, dilation=2)
 
             self.conv3_3 = nn.Conv2d(32, 20, (3,3), padding=2, dilation=2)
-            self.bn = nn.BatchNorm2d(1)
         else:
             self.crn2 = False
             self.conv1 = nn.Conv2d(args.features_dim, 32, (3,3), padding=1)
@@ -51,8 +50,6 @@ class CRNLayer(nn.Module):
         m = self.accumulate(m)
         if not(hasattr(self, 'crn2')) or not(self.crn2):
             m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
-        elif hasattr(self, 'crn2') and self.crn2:
-            m = self.bn(m)
         # residual
         x = F.normalize(x, p=2, dim=1)
         soft_assign = self.conv(x).view(N, self.num_clusters, -1)
