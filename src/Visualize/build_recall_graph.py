@@ -69,11 +69,17 @@ def make_comapre_recall_graph(runs, legend, out_folder):
     try:
         for r in runs:
             recalls = getRecalls(r)
-            all_recalls['val'].append(get_best_recall(recalls['val']))
+            try:
+                all_recalls['val'].append(get_best_recall(recalls['val']))
+            except:
+                print("Can't build validation graph")
+                #del all_recalls['val']
+
             all_recalls['test_pitts30k'].append(recalls['test'][0])
             all_recalls['test_st_lucia'].append(recalls['test'][1])
-    except:
-        print(f'ERROR: Unable to extract recalls')
+    except Exception as e:
+        print(f'ERROR: Unable to extract recalls: {e}')
+        exit()
     #### build graphs
     for k in all_recalls:
         recalls = all_recalls[k]
@@ -84,6 +90,7 @@ def make_comapre_recall_graph(runs, legend, out_folder):
             plt.xticks(x)
         plt.legend()
         plt.grid(True)
+        plt.xlabel('Recalls')
         plt.savefig(join(out_folder, str(k) + '_recalls_graph.png')) 
 
 if __name__ == '__main__':
@@ -96,5 +103,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if len(args.exp_runs) != len(args.legend):
         raise ValueError(f'The number of legend voices {len(args.legend)} is different from the number of runs {len(args.exp_runs)}')
-
+    if not(os.path.isdir(args.out_dir)):
+        print(f"Creating directory {args.out_dir}...")
+        os.makedirs(args.out_dir)
     make_comapre_recall_graph(args.exp_runs, args.legend, args.out_dir)

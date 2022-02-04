@@ -37,7 +37,7 @@
 \begin{document}
 
 %%%%%%%%% TITLE - PLEASE UPDATE
-\title{Report}
+\title{Visual Geo-Localization}
 
 \author{Matteo Gambino\\
 s287572
@@ -113,13 +113,31 @@ features produced. The resulting mask is then upsampled, in order to restore the
 by using a bilinear interpolator.This results into a mask that is used as to re-weight the features produced by the soft assignment specified
 into the NetVLAD description as showed in figure \ref{fig:CRN:ark} into the context modulation layer. This layer is 
 performing the product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
-in the standard NetVLAD core instead of the soft-assignment scores. 
+in the standard NetVLAD core instead of the soft-assignment scores. Also this head requires the initialization of centroids as the 
+NetVLAD head.
 
 \begin{figure}
    \centering
    \includegraphics[width=0.3\textwidth]{img/CRN.png}
    \caption{The architecture of the CRN head.}
    \label{fig:CRN:ark}
+\end{figure}
+
+\subsection{CRN2 head}
+In order to reduce the number of parameters to be learned by the CRN head, we have implemented a second version of this head,
+called CRN2, that exploits the ideas of concatenating multiple $3x3$ filters in order to obtain the same receptive field of a
+bigger filter but using less parameters as suggested in \cite{VGG}. In particular we have replaced the $5x5$ and the $7x7$ filters showed in figure \ref{fig:CRN:ark}
+with respectively 2 and 3 stacked $3x3$ filters as showed in figure \ref{fig:CRN2:ark}. In addition to that, we have used dilated convolution
+in order to remove the pooling and upsampling layers by generating the mask directly at the desired resolution inspired by the work 
+proposed in \cite{atrous}. This, although requires 
+more computation, will produce more accurate masks that may help the network to better focus on the relevant parts of the images.
+Also this head requires the initialization of centroids as the CRN and the NetVLAD heads.
+
+\begin{figure}
+   \centering
+   \includegraphics[width=0.3\textwidth]{img/CRN2.png}
+   \caption{The architecture of the CRN2 head.}
+   \label{fig:CRN2:ark}
 \end{figure}
 
 \section{Experiments}
@@ -154,6 +172,17 @@ training, validation and testing, composed by $10k$ images each. Those are image
 view images. In addition, also the St. Lucia dataset \cite{st_lucia} has been used only for testing the models trained on the pitts30k dataset.
 The location of the images contained in both datasets can be seen in figure \ref{fig:datasets}.
 
+\paragraph{Mining procedure}
+In order to train our models we need to generate triplets in the form $\{I_q, I^+, I^-\}$: for each query image $I_q$ we are looking for
+positive examples $I^+$ and negative ones ($I^-$). In order to do so, for each query image we retrieve the images into the database that are
+in a range specified by the positive distance threshold. We use 2 possibly different values for this threshold at train and test time.
+Among all images in this range, we select as best positive the one that has descriptors more similar to the query image and we use this image
+as $I^+$. All the images not in the positive distance threshold range are considered as negative samples. We select by default the 10 
+images, from the negative set, that have the as similar as possible descriptors as the query image. We call those images hard negatives and
+we are using those instead of randomly picking from the negative set in order to make the task for the network more challenging resulting in 
+a more robust model. Since we have to generate the descriptors that vary over the training procedure, we are periodically recalculating the 
+triplets within the epochs.
+
 \paragraph{Metric adopted}
 Those results have been obtained by evaluating the models by using a standard evaluation procedure for place recognition.
 A given query image is said to be correctly localized if at least one of the $N$ retrieved images is placed at a distance lower
@@ -162,7 +191,7 @@ that we are calculating the percentage of correctly classified images for differ
 
 \subsection{Comparison among the proposed heads}
 The results of comparison between the various proposed heads are reported in table \ref{tab:base_results}. Those results have 
-been obtained on the pitts30k test set. As it's possible to notice the head that is giving best results is the CRN and that clarily
+been obtained on the pitts30k test set. As it's possible to notice the head that is giving best results is the CRN and that 
 shows that adding attention is essential for improving the quality of generated descriptors. It's important to notice also how 
 the results are influenced by the number of produced descriptors. In fact both the NetVLAD and the CRN head are generating much 
 more descriptors with respect to the GeM and the base heads and this seems correlated to higher recalls. Since the CRN and the NetVLAD
@@ -176,7 +205,8 @@ heads are outperforming the other ones, we will focus more on those 2 during the
 Base     & 256   &         60.1   &         80.6   &          87.4   &          91.7   \\
 GeM      & 256   &         71.6   &         87.0   &          91.0   &          94.0   \\
 NetVLAD  & 16384 &         79.1   &         89.3   &          92.3   &          94.4   \\ \hline
-CRN*     & 16384 &\textbf{81.7}  & \textbf{90.7}  &  \textbf{93.4}  &  \textbf{95.3}  \\\hline
+CRN*     & 16384 &         81.7   & \textbf{90.7}  &  \textbf{93.4}  &  \textbf{95.3}  \\
+CRN2     & 16384 &\textbf{81.8}   & \textbf{90.7}  &          93.2   &          95.2   \\ \hline
 \end{tabular}
 \caption{Results on the pitts30k test set obtained with the various heads compared with the base head. The number of generated descriptors 
 is also shown in the column Descs.}
@@ -198,6 +228,82 @@ lr = 1e-5 & \textbf{83.5}   & \textbf{93.1} &         94.3  & \textbf{97.1}     
 \end{table}
 
 \section{Ablation study}
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/augment/test_pitts30k_recalls_graph.png}
+      \caption{Pitts30k}
+      \label{fig:recalls:augment:pitts30k}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/augment/test_st_lucia_recalls_graph.png}
+      \caption{St. Lucia}
+      \label{fig:recalls:augment:st_lucia}
+   \end{subfigure}
+   \caption{Graph showing the recalls obtained with different augmentation techniques on both the pitts30k \ref{fig:recalls:augment:pitts30k} dataset and the St. Lucia \ref{fig:recalls:augment:st_lucia} dataset.}
+   \label{fig:recalls:augment}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/resize/test_pitts30k_recalls_graph.png}
+      \caption{Pitts30k}
+      \label{fig:recalls:resize:pitts30k}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/resize/test_st_lucia_recalls_graph.png}
+      \caption{St. Lucia}
+      \label{fig:recalls:resize:st_lucia}
+   \end{subfigure}
+   \caption{Graph showing the recalls obtained with different input image size on both the pitts30k \ref{fig:recalls:resize:pitts30k} dataset and the St. Lucia \ref{fig:recalls:resize:st_lucia} dataset.}
+   \label{fig:recalls:resize}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/train_th/test_pitts30k_recalls_graph.png}
+      \caption{Pitts30k}
+      \label{fig:recalls:train_th:pitts30k}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/train_th/test_st_lucia_recalls_graph.png}
+      \caption{St. Lucia}
+      \label{fig:recalls:train_th:st_lucia}
+   \end{subfigure}
+   \caption{Graph showing the recalls obtained with different train positive distance threshold on both the pitts30k \ref{fig:recalls:train_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:train_th:st_lucia} dataset.}
+   \label{fig:recalls:train_th}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/test_th/test_pitts30k_recalls_graph.png}
+      \caption{Pitts30k}
+      \label{fig:recalls:test_th:pitts30k}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}[b]{0.23\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{img/test_th/test_st_lucia_recalls_graph.png}
+      \caption{St. Lucia}
+      \label{fig:recalls:test_th:st_lucia}
+   \end{subfigure}
+   \caption{Graph showing the recalls obtained with different test positive distance threshold on both the pitts30k \ref{fig:recalls:test_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:test_th:st_lucia} dataset.}
+   \label{fig:recalls:test_th}
+\end{figure}
 
 \section{Conclusions}
 
