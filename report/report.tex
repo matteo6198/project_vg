@@ -256,11 +256,31 @@ is also shown in the column Descs.}
 \label{tab:base_results}
 \end{table}
 
+\subsection{CRN and CRN2 models}
+As it's possible to notice from table \ref{tab:base_results}, the performances of the CRN and CRN2 networks are very close one to each other as expected
+from the definition of the two networks. It's important to notice that the CRN2 network is using less parameters with respect to the CRN network. In fact,
+the CRN2 network is using only 245K parameters compared to the 529k parameters used by the CRN network for the generation of the mask.
+As shown in the table \ref{tab:time}, the time required to extract descriptors for a single image is slightly higher for the CRN2 network but the differences
+are not significative. For those reasons, the CRN2 network has to be preferred to the CRN network. 
+
+\begin{table}
+   \centering
+   \begin{tabular}{|l|c|}
+      \hline
+      Network     &  time (s)\\\hline
+      NetVLAD     &  0.0206\\
+      CRN         &  0.0215\\
+      CRN2        &  0.0285\\\hline
+   \end{tabular}
+   \caption{The running time for a single image for the various networks computed on a GPU NVIDIA Tesla K80.}
+   \label{tab:time}
+\end{table}
+
 \section{Ablation study}
 In this section we discuss the effect of changing one by one some parameters of the NetVLAD network, we especially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation techniques and by changing the resolution of the images.
 \subsection{Comparison between different learning rates}
 As first ablation study we tried different learning rates, from the table \ref{tab:NETVLAD:lr} we can see that the best results in calculating the percentage of correctly classified images are obtained with a learning rate of $10^{-5}$ , with this learning rate the network is superior to the other configuration of learning rate in each case. We also noticed that by decreasing the learning rate we increment the number of epochs needed to end the training.
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline

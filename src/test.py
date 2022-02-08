@@ -10,6 +10,7 @@ from torch.utils.data.dataset import Subset
 from Utils.constants import FEATURES_DIM
 from Visualize import viewNets
 from Utils import constants
+import time
 
 
 def test(args, eval_ds, model):
@@ -21,22 +22,24 @@ def test(args, eval_ds, model):
         database_subset_ds = Subset(eval_ds, list(range(eval_ds.database_num)))
         database_dataloader = DataLoader(dataset=database_subset_ds, num_workers=args.num_workers,
                                         batch_size=args.infer_batch_size, pin_memory=(args.device=="cuda"))
-        
+        t1 = time.time()
         all_features = np.empty((len(eval_ds), FEATURES_DIM[args.net]), dtype="float32")
         for inputs, indices in tqdm(database_dataloader, ncols=100):
             features = model(inputs.to(args.device))
             features = features.cpu().numpy()
             all_features[indices.numpy(), :] = features
-        
+        t2 = time.time()
         logging.debug("Extracting queries features for evaluation/testing")
         queries_subset_ds = Subset(eval_ds, list(range(eval_ds.database_num, eval_ds.database_num+eval_ds.queries_num)))
         queries_dataloader = DataLoader(dataset=queries_subset_ds, num_workers=args.num_workers,
                                         batch_size=args.infer_batch_size, pin_memory=(args.device=="cuda"))
+        t3 = time.time()
         for inputs, indices in tqdm(queries_dataloader, ncols=100):
             features = model(inputs.to(args.device))
             features = features.cpu().numpy()
             all_features[indices.numpy(), :] = features
-    
+        tot = t2-t1 + time.time()-t3
+    logging.debug(f"mean execution time per image: {tot/len(eval_ds):.5f}")
     queries_features = all_features[eval_ds.database_num:]
     database_features = all_features[:eval_ds.database_num]
     
