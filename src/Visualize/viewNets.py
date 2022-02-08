@@ -67,6 +67,7 @@ def save_image(im, path):
     if isinstance(im, (torch.Tensor)):
         im = transforms.functional.to_pil_image(im.squeeze(0))
     im.save(path)
+
 def get_img_CRN(model, img, img_transformed, net):
     with torch.no_grad():
         feat = model.backbone(img_transformed)
@@ -85,8 +86,24 @@ def get_img_CRN(model, img, img_transformed, net):
         m = model.aggregation.accumulate(m)
         if net == 'CRN':
             m = F.interpolate(m, (W, H), mode='bilinear', align_corners=False)
+        x = F.normalize(feat, p=2, dim=1)
+        soft_assign = model.aggregation.conv(x).view(N, model.aggregation.num_clusters, -1)
+        soft_assign = F.softmax(soft_assign, dim=1)
+        soft_assign = soft_assign.view(N,model.aggregation.num_clusters, W, H) * m
+        soft_assign = soft_assign.sum(dim=1).view((N,1,W,H))
+        return get_class_activation_images(img, soft_assign.to('cpu'))
 
-        return get_class_activation_images(img, m.to('cpu'))
+def get_img_NetVLAD(model, img, img_transformed):
+    feat = model.backbone(img_transformed)
+    N, C, W, H = feat.shape
+
+    if model.aggregation.normalize_input:
+        x = F.normalize(feat, p=2, dim=1)  # across descriptor dim
+    # soft-assignment
+    soft_assign = model.aggregation.conv(x).view(N, model.aggregation.num_clusters, -1)
+    #soft_assign = F.softmax(soft_assign, dim=1)
+    soft_assign = soft_assign.sum(dim=1).view((N, 1, W, H))
+    return get_class_activation_images(img, soft_assign.to('cpu'))
 
 # def get_dist(p1, p2):
 #     return ((float(p1[0])-float(p2[0]))**2 + (float(p1[1])-float(p2[1]))**2) ** 0.5
@@ -147,6 +164,8 @@ def view(args, test_ds, predictions, model):
             img_transformed = constants.TRANFORMATIONS['normalize'](img)
             if args.net == 'CRN' or args.net == 'CRN2':
                 imgs.extend(get_img_CRN(model, img, img_transformed.to(args.device), args.net))
+            elif args.net == 'NETVLAD':
+                imgs.extend(get_img_NetVLAD(model, img, img_transformed.to(args.device)))
 
             for i, f in imgs:
                 save_image(i, f'{out_dir}/{id}{f}')
