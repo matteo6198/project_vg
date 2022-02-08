@@ -293,11 +293,30 @@ Initially the distance at which positive are taken was set at 25 meters, we trie
 	\caption{Graph showing the recalls obtained with different train positive distance threshold on both the pitts30k \ref{fig:recalls:train_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:train_th:st_lucia} dataset.}
 	\label{fig:recalls:train_th}
 \end{figure}
-We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perform in a better way than smaller ones.\\
-As shown in figure \ref{fig:recalls:test_th}, in the Pitts30k dataset we can see that the recall on one image is 65.1 with the positive threshold distance set at 10 meters while the recall with the distance set at 50 meters is 82.9, there is a margin of 17.8\%\\
-The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R@1 and becomes 13\% at R@20.
+We also tried different test positive distance threshold and in this case there is a big difference between the different distances,greater distances perform in a better way than smaller ones.\\
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.23\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{img/test_th/test_pitts30k_recalls_graph.png}
+		\caption{Pitts30k}
+		\label{fig:recalls:test_th:pitts30k}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}[b]{0.23\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{img/test_th/test_st_lucia_recalls_graph.png}
+		\caption{St. Lucia}
+		\label{fig:recalls:test_th:st_lucia}
+	\end{subfigure}
+	\caption{Graph showing the recalls obtained with different test positive distance threshold on both the pitts30k \ref{fig:recalls:test_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:test_th:st_lucia} dataset.}
+	\label{fig:recalls:test_th}
+\end{figure}
+In the Pitts30k dataset we can see that the recall on one image is 65.1 with the positive threshold distance set at 10 meters while the recall with the distance set at 50 meters is 82.9, there is a margin of 17.8\%\\
+The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R1 and becomes 13\% at R20.
 
-
+\subsection{Comparison between different data augmentation techniques}
+In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip we flipped the image over the vertical axis and with the last transformation we erase with random values the pixel contained inside a rectangle region.
 \begin{figure}
    \centering
    \begin{subfigure}[b]{0.23\textwidth}
@@ -316,6 +335,8 @@ The same trend is maintained in all the different recalls on both the Pitts30k a
    \caption{Graph showing the recalls obtained with different augmentation techniques on both the pitts30k \ref{fig:recalls:augment:pitts30k} dataset and the St. Lucia \ref{fig:recalls:augment:st_lucia} dataset.}
    \label{fig:recalls:augment}
 \end{figure}
+For the Pitts30k dataset we can see in figure \ref{fig:recalls:augment:pitts30k} that all the data augmentation techniques have a similar performance compared to the default configuration of the dataset; Only the flip and rotate technique gets sightly worse results in the first recalls.\\
+For the St. Lucia dataset we can see in figure \ref{fig:recalls:augment:st_lucia} that all the data augmentation techniques have very different performance, in this case only the Color Jitter transformation gets better results than the default configurations, while  Random Erasing and Flip + Rotate get sightly worse results in all the recalls.
 
 \begin{figure}
    \centering
@@ -334,27 +355,6 @@ The same trend is maintained in all the different recalls on both the Pitts30k a
    \end{subfigure}
    \caption{Graph showing the recalls obtained with different input image size on both the pitts30k \ref{fig:recalls:resize:pitts30k} dataset and the St. Lucia \ref{fig:recalls:resize:st_lucia} dataset.}
    \label{fig:recalls:resize}
-\end{figure}
-
-
-
-\begin{figure}
-   \centering
-   \begin{subfigure}[b]{0.23\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{img/test_th/test_pitts30k_recalls_graph.png}
-      \caption{Pitts30k}
-      \label{fig:recalls:test_th:pitts30k}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{0.23\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{img/test_th/test_st_lucia_recalls_graph.png}
-      \caption{St. Lucia}
-      \label{fig:recalls:test_th:st_lucia}
-   \end{subfigure}
-   \caption{Graph showing the recalls obtained with different test positive distance threshold on both the pitts30k \ref{fig:recalls:test_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:test_th:st_lucia} dataset.}
-   \label{fig:recalls:test_th}
 \end{figure}
 
 \section{Conclusions}
