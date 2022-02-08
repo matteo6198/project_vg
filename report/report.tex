@@ -96,7 +96,36 @@ inserted a fully connected layer that takes as input the pooled features in orde
 descriptors since it has been shown by \cite{GEM} that this approach is providing better results than
 using other strategies like PCA.
 
-\subsection{NetVLAD head}
+\subsection{NetVLAD head}\label{sec:NETVLAD}
+Inspired by the work presented in \cite{NETVLAD}, we have implemented also a NetVLAD head that solves in an 
+elegant way the problem of computing Vectors of Locally Aggregated Descriptors (VLAD), as described in \cite{VLAD},
+in CNN. This network, in order to compute those VLAD descriptors, is using two different parts. 
+The first is called soft-assignment branch that is replacing the hard assignment of a descriptor to a single cluster
+with a soft assignment of the descriptor to every cluster. This is performed using a soft-max operation on top of the output of a $1x1$
+ convolution layer that produces the probabilities $s_k$ that a given descriptor $x_i$ belongs to a cluster $k$ by:
+ \begin{equation}
+    s_k(x_i) = {{e^{W_k^T x_i+b_k}}\over{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
+ \end{equation} 
+The second part, denominated VLAD core, is effectively computing the 
+VLAD representation of the image given an image descriptor $x$, the cluster centers $c$ and the computed soft assignments
+$s$ following the equation:
+\begin{equation}
+   V(j,k) = \sum_{i=1}^N s_k(x_i) (x_i(j) - c_k(j))
+\end{equation} 
+where $x_i(j)$ and $c_k(j)$ represent respectively the j-th dimension of the i-th descriptor and the k-th cluster center.
+The obtained descriptors are then intra-normalized (using a column-wise L-2 norm), flattened into a vector and then a
+final L-2 norm operation is applied.
+For this network is fundamental to initialize the cluster centers in order to obtain good performances. This initialization
+is preformed in a preliminary step using a small subset of the training data available and consists in computing the features 
+representations, using the pre-trained ResNet-18 backbone, and then extracting the descriptors by randomly selecting some of the 
+obtained features. Then, in order to obtain the cluster's centroids, k-means is used over the computed descriptors and the 
+weights in the convolution layer for soft-assignment are initialized, to reproduce the results that would have been obtained
+with VLAD described in \cite{VLAD}, using:
+\begin{equation}
+   W = \alpha ({{c}\over{{||c||}_2}} \cdot d )
+\end{equation}
+where $c$ and $d$ are respectively the computed clusters centers and descriptors, $\alpha$ is instead selected to be large
+in order to better mimic the traditional VLAD.
 
 \subsection{CRN head}
 Seen the results provided from the previous implemented heads and the success of the attention layers to make 
@@ -114,7 +143,7 @@ by using a bilinear interpolator.This results into a mask that is used as to re-
 into the NetVLAD description as showed in figure \ref{fig:CRN:ark} into the context modulation layer. This layer is 
 performing the product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
 in the standard NetVLAD core instead of the soft-assignment scores. Also this head requires the initialization of centroids as the 
-NetVLAD head.
+NetVLAD head and the initialization adopted is the same described in the section \ref{sec:NETVLAD}.
 
 \begin{figure}
    \centering
@@ -131,7 +160,8 @@ with respectively 2 and 3 stacked $3x3$ filters as showed in figure \ref{fig:CRN
 in order to remove the pooling and upsampling layers by generating the mask directly at the desired resolution inspired by the work 
 proposed in \cite{atrous}. This, although requires 
 more computation, will produce more accurate masks that may help the network to better focus on the relevant parts of the images.
-Also this head requires the initialization of centroids as the CRN and the NetVLAD heads.
+Also this head requires the initialization of centroids as the CRN and the NetVLAD heads
+and the initialization adopted is the same described in the section \ref{sec:NETVLAD}.
 
 \begin{figure}
    \centering
