@@ -259,22 +259,22 @@ is also shown in the column Descs.}
 \section{Ablation study}
 In this section we discuss the effect of changing one by one some parameters of the NetVLAD network, we especially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation techniques and by changing the resolution of the images.
 \subsection{Comparison between different learning rates}
-As first ablation study we tried different learning rates, from the table \ref{tab:NETVLAD:lr} we can see that the best results in calculating the percentage of correctly classified images are obtained with a learning rate of 1 , with this learning rate the network is superior to the other configuration of learning rate in each case. We also noticed that by decreasing the learning rate we increment the number of epochs needed to end the training.
+As first ablation study we tried different learning rates, from the table \ref{tab:NETVLAD:lr} we can see that the best results in calculating the percentage of correctly classified images are obtained with a learning rate of $10^{-5}$ , with this learning rate the network is superior to the other configuration of learning rate in each case. We also noticed that by decreasing the learning rate we increment the number of epochs needed to end the training.
 \begin{table}
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
 		&          $R@1$  &        $R@5$  &        $R@10$ &        $R@20$   \\ \hline     
-		lr = 1e-3 &         78.6    &    89.4       &    92.5       &         94.7       \\
-		lr = 1e-4 &         60.0    &         79.7  & 86.4 & 91.2  \\    
-		lr = 1e-5 & \textbf{82.3}   & \textbf{92.7} &         \textbf{95.0}  & \textbf{97.0}          \\
+		lr = $10^{-3}$ &         78.6    &    89.4       &    92.5       &         94.7       \\
+		lr = $10^{-4}$ &         79.1    &         89.3  & 92.3 & 94.4  \\    
+		lr = $10^{-5}$ & \textbf{79.3}   & \textbf{90.0} &         \textbf{92.8}  & \textbf{94.9}          \\
 		\hline
 	\end{tabular}
 	\caption{Results obtained with the NetVLAD head on the pitts30k test set with different learning rates}
 	\label{tab:NETVLAD:lr}
 \end{table}
 \subsection{Comparison between different positive distance threshold}
-Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure \ref{fig:recalls:train_th} shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
+Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure \ref{fig:recalls:train_th} shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St. Lucia datasets.\\
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -293,7 +293,7 @@ Initially the distance at which positive are taken was set at 25 meters, we trie
 	\caption{Graph showing the recalls obtained with different train positive distance threshold on both the pitts30k \ref{fig:recalls:train_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:train_th:st_lucia} dataset.}
 	\label{fig:recalls:train_th}
 \end{figure}
-We also tried different test positive distance threshold and in this case there is a big difference between the different distances,greater distances perform in a better way than smaller ones.\\
+We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perform in a better way than smaller ones.\\
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -316,7 +316,7 @@ In the Pitts30k dataset we can see that the recall on one image is 65.1 with the
 The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R1 and becomes 13\% at R20.
 
 \subsection{Comparison between different data augmentation techniques}
-In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip we flipped the image over the vertical axis and with the last transformation we erase with random values the pixel contained inside a rectangle region.
+In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip and Random Erasing. With Color Jitter we randomized the contrast, brightness and color saturation of the image, with Horizontal Flip we flipped the image over the vertical axis and with the last transformation we erase with random values the pixel contained inside a rectangle region.
 \begin{figure}
    \centering
    \begin{subfigure}[b]{0.23\textwidth}
