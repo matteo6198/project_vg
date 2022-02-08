@@ -30,7 +30,7 @@
 
 %%%%%%%%% PAPER ID  - PLEASE UPDATE
 \def\cvprPaperID{***} % *** Enter the CVPR Paper ID here
-\def\confName{ x}
+\def\confName{x}
 \def\confYear{2022}
 
 
@@ -58,7 +58,7 @@ s287873
    of the various images that contains useful information and at the same time ignore not 
    informative areas like the ones containing elements like cars or pedestrians. For that 
    reason attention layers are fundamental in the proposed network. In addition to that we 
-   are comparing state of the art techniques for the visual geolocalization task like GeM \cite{GEM}, 
+   are comparing state of the art techniques for the visual geo-localization task like GeM \cite{GEM}, 
    NetVLAD \cite{NETVLAD} and CRN \cite{CRN}. The code used is publicly available 
    \href{https://github.com/matteo6198/project_visual_geolocalization}{here}
 \end{abstract}
@@ -86,7 +86,7 @@ to extract those descriptors.
 Following the work of \cite{GEM}, we have used a Generalized Mean approach in order to extract better 
 descriptors for the query image. The generalized mean we are using is defined as:
 \begin{equation}
-   f_k = ({{1}\over{X_k}} \sum_{x \in X_k} x^{p_k} ) ^ {1\over{p_k}}
+   f_k = ({\frac{1}{X_k}} \sum_{x \in X_k} x^{p_k} ) ^ {\frac{1}{p_k}}
 \end{equation}
 where $X_k $ represent one of the normalized features map and $p_k $ is the pooling parameter. This 
 pooling parameter is expressing how much is localized the zone of the image the network is focusing on.
@@ -104,7 +104,7 @@ The first is called soft-assignment branch that is replacing the hard assignment
 with a soft assignment of the descriptor to every cluster. This is performed using a soft-max operation on top of the output of a $1x1$
  convolution layer that produces the probabilities $s_k$ that a given descriptor $x_i$ belongs to a cluster $k$ by:
  \begin{equation}
-    s_k(x_i) = {{e^{W_k^T x_i+b_k}}\over{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
+    s_k(x_i) = {\frac{e^{W_k^T x_i+b_k}}{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
  \end{equation} 
 The second part, denominated VLAD core, is effectively computing the 
 VLAD representation of the image given an image descriptor $x$, the cluster centers $c$ and the computed soft assignments
@@ -122,7 +122,7 @@ obtained features. Then, in order to obtain the cluster's centroids, k-means is 
 weights in the convolution layer for soft-assignment are initialized, to reproduce the results that would have been obtained
 with VLAD described in \cite{VLAD}, using:
 \begin{equation}
-   W = \alpha ({{c}\over{{||c||}_2}} \cdot d )
+   W = \alpha ({\frac{c}{{||c||}_2}} \cdot d )
 \end{equation}
 where $c$ and $d$ are respectively the computed clusters centers and descriptors, $\alpha$ is instead selected to be large
 in order to better mimic the traditional VLAD.
@@ -202,7 +202,7 @@ training, validation and testing, composed by $10k$ images each. Those are image
 view images. In addition, also the St. Lucia dataset \cite{st_lucia} has been used only for testing the models trained on the pitts30k dataset.
 The location of the images contained in both datasets can be seen in figure \ref{fig:datasets}.
 
-\paragraph{Mining procedure}
+\paragraph{Mining procedure}\label{par:mining}
 In order to train our models we need to generate triplets in the form $\{I_q, I^+, I^-\}$: for each query image $I_q$ we are looking for
 positive examples $I^+$ and negative ones ($I^-$). In order to do so, for each query image we retrieve the images into the database that are
 in a range specified by the positive distance threshold. We use 2 possibly different values for this threshold at train and test time.
@@ -213,6 +213,19 @@ we are using those instead of randomly picking from the negative set in order to
 a more robust model. Since we have to generate the descriptors that vary over the training procedure, we are periodically recalculating the 
 triplets within the epochs.
 
+\paragraph{Loss function}
+We have set the problem of visual geo-localization in approximating the location of a query image by retrieving the nearest 
+database images in the descriptors space. For that reason, the objective of our training procedure is to make images geographically
+close have a similar representation in descriptor space and instead make as far as possible the representation of geographically far images.
+This is possible by exploiting contrastive learning and the loss function that we are using is defined by
+\begin{equation}
+   L(q, p, n) = \sum_i max( {|| q - p ||}_2 - {|| q - n_i||}_2 + m, 0)
+\end{equation}
+where $p$, $q$ and $n_i$ represent the descriptors extracted by the query image, the positive image and the negative ones (by default we extract
+$10$ negatives examples for each query image as described in \nameref{par:mining}).
+The parameter $m$ is instead specifying a margin between the positive and negative descriptor representation of the images.
+In fact, if a negative sample has a distance in the descriptors space higher than the margin $m$ the resulting loss will be $0$ and, instead,
+if the distance between the positive and negative descriptors is lower than the margin the loss will be proportional to the margin violation.
 \paragraph{Metric adopted}
 Those results have been obtained by evaluating the models by using a standard evaluation procedure for place recognition.
 A given query image is said to be correctly localized if at least one of the $N$ retrieved images is placed at a distance lower
@@ -260,7 +273,7 @@ As first ablation study we tried different learning rates, from the table \ref{t
 	\caption{Results obtained with the NetVLAD head on the pitts30k test set with different learning rates}
 	\label{tab:NETVLAD:lr}
 \end{table}
-\subsection{Comparison between different positive distance treshold}
+\subsection{Comparison between different positive distance threshold}
 Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure \ref{fig:recalls:train_th} shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
 \begin{figure}
 	\centering
