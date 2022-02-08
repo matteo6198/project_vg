@@ -338,24 +338,28 @@ In order to see how the results change we tried some data augmentation technique
 For the Pitts30k dataset we can see in figure \ref{fig:recalls:augment:pitts30k} that all the data augmentation techniques have a similar performance compared to the default configuration of the dataset; Only the flip and rotate technique gets sightly worse results in the first recalls.\\
 For the St. Lucia dataset we can see in figure \ref{fig:recalls:augment:st_lucia} that all the data augmentation techniques have very different performance, in this case only the Color Jitter transformation gets better results than the default configurations, while  Random Erasing and Flip + Rotate get sightly worse results in all the recalls.
 
-\begin{figure}
-   \centering
-   \begin{subfigure}[b]{0.23\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{img/resize/test_pitts30k_recalls_graph.png}
-      \caption{Pitts30k}
-      \label{fig:recalls:resize:pitts30k}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}[b]{0.23\textwidth}
-      \centering
-      \includegraphics[width=\textwidth]{img/resize/test_st_lucia_recalls_graph.png}
-      \caption{St. Lucia}
-      \label{fig:recalls:resize:st_lucia}
-   \end{subfigure}
-   \caption{Graph showing the recalls obtained with different input image size on both the pitts30k \ref{fig:recalls:resize:pitts30k} dataset and the St. Lucia \ref{fig:recalls:resize:st_lucia} dataset.}
-   \label{fig:recalls:resize}
-\end{figure}
+
+\subsection{Comparison between different images sizes}
+	The last ablation study has been the variation of the images sizes by scaling their dimensions by a scaling factor. We decided to try 4 scaling factors (including the standard one 1.00), the value selected are: 0.50, 0.75, 1.00, and 1.25.\\
+	The results of the scaling factor are shown in figure \textcolor{red}{7}, for both the Pitts30k and St. Lucia dataset it's clear that a reduction of the image size leads to an increment in the recall's value; This increment is way more visible in the St. Lucia dataset (figure \textcolor{red}{7b}).
+		\begin{figure}[!h]
+		\centering
+		\begin{subfigure}[b]{0.23\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{img/resize/test_pitts30k_recalls_graph.png}
+			\caption{Pitts30k}
+			\label{fig:recalls:resize:pitts30k}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[b]{0.23\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{img/resize/test_st_lucia_recalls_graph.png}
+			\caption{St. Lucia}
+			\label{fig:recalls:resize:st_lucia}
+		\end{subfigure}
+		\caption{Graph showing the recalls obtained with different input image size on both the pitts30k \ref{fig:recalls:resize:pitts30k} dataset and the St. Lucia \ref{fig:recalls:resize:st_lucia} dataset.}
+		\label{fig:recalls:resize}
+	\end{figure}
 
 \section{Conclusions}
 
