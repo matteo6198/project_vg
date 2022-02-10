@@ -260,7 +260,7 @@ is also shown in the column Descs.}
 As it's possible to notice from table \ref{tab:base_results}, the performances of the CRN and CRN2 networks are very close one to each other as expected
 from the definition of the two networks. It's important to notice that the CRN2 network is using less parameters with respect to the CRN network. In fact,
 the CRN2 network is using only 245K parameters compared to the 529k parameters used by the CRN network for the generation of the mask.
-As shown in the table \ref{tab:time}, the time required to extract descriptors for a single image is higher for the CRN2 network with an increase of 32.5% 
+As shown in the table \ref{tab:time}, the time required to extract descriptors for a single image is higher for the CRN2 network with an increase of 32.5\% 
 of the required execution time. This is due to the removal of the downsampling layer present in the original CRN implementation that implies the analysis of the image 
 at full resolution and this 
 has to be taken in consideration during the deploy phase where the descriptors for the query images have to be computed online. We have also noticed that an increase
