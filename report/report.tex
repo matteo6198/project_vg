@@ -305,6 +305,30 @@ application using those networks.
    \label{tab:time}
 \end{table}
 
+\subsection{Visual results}
+In this section we are going to show some visual results obtained with the various heads. In the figure \ref{fig:visual} we are 
+reporting the results obtained with the NetVLAD, CRN, CRN2 heads on a query image taken from the pitts30k dataset. How it's 
+possible to notice from the second column of the figure \ref{fig:visual} that shows the soft-assignment scores (summed over the 64 clusters used) heatmap 
+on the query 
+image, the attention layers are fundamental in order to make the network focus only on the relevant parts of the image.
+It's important to notice that the CRN2 network is focusing at smaller portions of the query image and this can increase the difficulty in finding 
+really discriminative zones of the query while the CRN model is focusing on wider areas that include the most relevant parts of the image.
+
+\begin{figure}
+   \centering
+   \setlength{\tabcolsep}{-0.1pt}   % set length to -2pt
+   \addtolength{\tabcolsep}{-0.1pt} % reduce space by -2pt
+   \def\arraystretch{0.2}
+   \begin{tabular}{ccc}
+      Query & Soft-assignment & Prediction\\
+            & \includegraphics[width=0.15\textwidth]{img/results/29/29_NETVLAD_Cam_On_Image.png} & \includegraphics[width=0.15\textwidth]{img/results/29/29_NETVLAD_best_pred.png}\\
+      \includegraphics[width=0.15\textwidth]{img/results/29/29_query.png} & \includegraphics[width=0.15\textwidth]{img/results/29/29_CRN_Cam_On_Image.png} &  \includegraphics[width=0.15\textwidth]{img/results/29/29_CRN_best_pred.png}\\
+            & \includegraphics[width=0.15\textwidth]{img/results/29/29_CRN2_Cam_On_Image.png}    & \includegraphics[width=0.15\textwidth]{img/results/29/29_CRN2_best_pred.png}
+   \end{tabular}
+   \caption{Results on a image from the pitts30k dataset. The first row is showing results obtained with NetVLAD, the second with the CRN network, the third one with CRN2 network all on the same query image shown in the first column.
+   The soft-assignment column is computed by summing over the 64 cluster soft-assignment scores. }
+   \label{fig:visual}
+\end{figure}
 	
 \section{Ablation study}
 In this section we discuss the effect of changing one by one some paramethers of the NetVLAD network, we expecially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation tecniques and by changing the resolution of the images.\\
