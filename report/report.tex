@@ -65,8 +65,40 @@
 
 %%%%%%%%% BODY TEXT
 \section{Introduction}
+	For what concerns geolocalization and its purpose the best results have been achieved through
+	deep learning algorithms that, thanks to the analysis of pixels of a given photograph, could retrieve 
+	very accurated informations using convolutional neural networks (CNN). Of course image retrieval
+	is not an easy task; starting from classification tasks, such as recognizing the elements of an image,
+	it aims at extracting the most interesting features for each image from a large database; then for a query image
+	it has to extract useful features from that too and then  find a correspondence between the features
+	of the query photograph and the ones inside the database. 
+	\newline An other relevant aspect on which it is important to keep attention on is the place recognition problem that
+	is very challenging. In fact we must figure out that there are lots of conditions under which a picture can be taken:
+	for example there may be different illuminations for a given place; so it is important to understand what is the appropriate 
+	representation of a place that is rich enough to distinguish similarly looking places. The system built over
+	visual place recognition must respect different constraints in terms of time spent and accuracy for retrieving GPS coordinates
+	of a certain photograph. Thus, before starting, consider that each image should be taken
+	from different points of view, with different lighting conditions, with dynamic objects and in different long-term conditions.
 
 \section{Related works}
+	Solving visual geolocalization issues leads to the resolution of other sub-problems.
+	\newline Image retrieval consists of different steps such as features extraction, feature aggregation and similarity research.
+	The methods on which each step has been approached are different: for feature extraction the most important ones are
+	the scale invariant feature transform (SIFT), SURF which tries to keep the computation faster;
+	then RootSIFT which finds better descriptor than SIFT and speed-up computational time.
+	\newline Feature aggregation comes from natural language processing trying to count the occurences of many words in a vector ("bag of words");
+	after that it has become a cluster problem where to assign each item of a given set to a peculiar set which represents 
+	components with the same feature: the Vector of Locally Aggregated Descriptors (VLAD) is a way to accomplish to this task, in which
+	is computed the distance between the feature and the center if its cluster for a more specific representation.
+	Weights are also assigned to each feature in order that high-value weights represent more discriminative features.
+	Furthermore NetVLAD \cite{NETVLAD} has been proposed as a layer plugged in CNNs.
+	\newline For what concerns similarity research we can assume that the euclidean distance is the oldest method to find the most similar
+	vector of features to a given one and it is practicable until dimensions don't gropw up. In this case it is better to use PCA technique
+	to afford dimensionality reduction.
+	\newline Visual place recognition could also be seen from another domain using 3D based methods to deal with it. 3D datasets are used to find
+	the location of 2D query image thanks to the use of particular instrumentation that allows to reconstruct images from 2D to 3D but
+	causing a loss in terms of computation time and storage needs. For this purpose those methous are usually used with 2D-based methods
+	that try to filter a limited number of candidates from the dataset and then processing 3D methods.
 
 \section{Methods}
 Like \cite{GEM}, \cite{NETVLAD}, \cite{CRN} we have casted the problem of place recognition as the task of image
