@@ -285,16 +285,16 @@ application using those networks.
 	
 \section{Ablation study}
 In this section we discuss the effect of changing one by one some paramethers of the NetVLAD network, we expecially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation tecniques and by changing the resolution of the images.\\
-As optimizer algorithm we decided to use the Stochastic gradient descent (SGD), the results of the application of this iterative method are clear in terms of recall, in the table is possible seeing an increment of it in both the datasets.\\
+As optimizer algorithm we decided to use the Stochastic Gradient Descent (SGD), the results of the application of this iterative method, displayed in the table are \textcolor{red}{2}, are an increment of the recall int the Pitts30k dataset and a decrement in the St, Lucia dataset.\\
 pitts30k
 \begin{table}[!h]
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
 		.&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
-		NetVLAD  Pitts30k     &         60.1   &         79.7   &          86.4   &          91.2   \\
-		NetVLAD St. Lucia        &         24.2   &         43.3   &          53.7   &          65.3   \\ \hline
-		NetVLAD (SGD) Pitts30k  &         79.5   &         90.4   &          93.0   &          95.0   \\ 
+		NetVLAD  Pitts30k     &         79.1   &         89.3   &          92.3   &          94.4   \\
+		NetVLAD (SGD) Pitts30k  &         \textbf{79.5}   &         \textbf{90.4}   &          \textbf{93.0}   &          \textbf{95.0}   \\ hline
+		NetVLAD St. Lucia        &         \textbf{43.0}   &         \textbf{58.5}   &          \textbf{67.4}   &          \textbf{74.7}   \\
 		NetVLAD (SGD) St. Lucia      &         42.1   & 56.8  &  63.7  &  71.4  \\
 		 \hline
 	\end{tabular}
