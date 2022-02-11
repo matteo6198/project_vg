@@ -332,7 +332,7 @@ really discriminative zones of the query while the CRN model is focusing on wide
 	
 \section{Ablation study}
 In this section we discuss the effect of changing one by one some paramethers of the NetVLAD network, we expecially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation tecniques and by changing the resolution of the images.\\
-As optimizer algorithm we decided to use the Stochastic Gradient Descent (SGD), the results of the application of this iterative method, displayed in the table are \textcolor{red}{2}, are an increment of the recall int the Pitts30k dataset and a decrement in the St, Lucia dataset.\\
+As optimizer algorithm we decided to use the Stochastic Gradient Descent (SGD), the results of the application of this iterative method, displayed in the table \ref{tab:SGD}, are an increment of the recall int the Pitts30k dataset and a decrement in the St, Lucia dataset.\\
 pitts30k
 \begin{table}[!h]
 	\centering
@@ -346,7 +346,7 @@ pitts30k
 		 \hline
 	\end{tabular}
 	\caption{Results on the pitts30k and St. Lucia test sets obtained with the NetVLAD head compared with the NetVLAD+SDG head.}
-	\label{tab:base_results}
+	\label{tab:SGD}
 \end{table}
 
 \subsection{Comparison between different learning rates}
