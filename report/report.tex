@@ -200,7 +200,10 @@ In this section we evaluate the results obtained by the implemented heads and th
 The experiments have been run on the pitts30k dataset \cite{NETVLAD} that is containing 3 different predefined splits, respectively for 
 training, validation and testing, composed by $10k$ images each. Those are images taken in the city of Pittsburgh from the Google street
 view images. In addition, also the St. Lucia dataset \cite{st_lucia} has been used only for testing the models trained on the pitts30k dataset.
-The location of the images contained in both datasets can be seen in figure \ref{fig:datasets}.
+The location of the images contained in both datasets can be seen in figure \ref{fig:datasets}. Those two datasets have a significant domain shift
+since the images of Pittsburgh are mostly in a urban scenario with scenes mostly composed by skyscrapers while the images on the St. Lucia dataset 
+are taken in a more natural scenario where the trees are much more present than buildings. We are using those dataset in order to assess how well
+the proposed models generalize on different scenarios.
 
 \paragraph{Mining procedure}\label{par:mining}
 In order to train our models we need to generate triplets in the form $\{I_q, I^+, I^-\}$: for each query image $I_q$ we are looking for
@@ -256,6 +259,26 @@ heads are outperforming the other ones, we will focus more on those 2 during the
 	\label{tab:base_results}
 \end{table}
 
+The table \ref{tab:base_results:st_lucia} is reporting the results obtained on the St. Lucia dataset. As it's possible to notice, 
+those results are much lower than the ones obtained on the pitts30k dataset and this is probably due to the big domain shift between the 2 datasets.
+However it's important to notice how also in this case attention is providing best results especially for lower recall values while
+simpler methods like GeM are providing the best performances at higher recall values. 
+\begin{table}
+	\centering
+	\begin{tabular}{|l|c|c|c|c|c|}
+		\hline
+		& Descs.&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
+		Base     & 256   &         26.8   &         45.4   &          55.1   &          63.9   \\
+		GeM      & 256   &         41.7   &         62.2   &  \textbf{70.6}  &  \textbf{81.4}   \\
+		NetVLAD  & 16384 &         44.8   &         59.4   &          66.7   &          75.3   \\ \hline
+		CRN*     & 16384 & \textbf{48.7}  & \textbf{63.3}  &          69.7   &          75.9  \\
+		CRN2     & 16384 &         47.6   &         62.6   &          69.2   &          75.3   \\ \hline
+	\end{tabular}
+	\caption{Results on the St. Lucia test set obtained with the various heads compared with the base head. The number of generated descriptors 
+		is also shown in the column Descs.}
+	\label{tab:base_results:st_lucia}
+\end{table}
+
 \subsection{CRN and CRN2 models}
 As it's possible to notice from table \ref{tab:base_results}, the performances of the CRN and CRN2 networks are very close one to each other as expected
 from the definition of the two networks. It's important to notice that the CRN2 network is using less parameters with respect to the CRN network. In fact,
@@ -272,8 +295,8 @@ application using those networks.
    \begin{tabular}{|l|c|}
       \hline
       Network     &  time (s)\\\hline
-      Base       &  0.0158\\
-      GeM        &  0.0158\\
+      Base        &  0.0158\\
+      GeM         &  0.0158\\
       NetVLAD     &  0.0206\\
       CRN         &  0.0215\\
       CRN2        &  0.0285\\\hline
