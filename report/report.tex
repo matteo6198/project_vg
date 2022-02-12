@@ -30,7 +30,7 @@
 
 %%%%%%%%% PAPER ID  - PLEASE UPDATE
 \def\cvprPaperID{***} % *** Enter the CVPR Paper ID here
-\def\confName{ x}
+\def\confName{x}
 \def\confYear{2022}
 
 
@@ -104,7 +104,7 @@
 Like \cite{GEM}, \cite{NETVLAD}, \cite{CRN} we have casted the problem of place recognition as the task of image
 retrieval. We have implemented 3 different networks all based on the ResNet-18 \cite{resnet} backbone
 without the fully connected layers and the last convolution layer. On the top of this backbone we 
-have inserted 4 different heads, inspired by the works of \cite{GEM}, \cite{NETVLAD}, \cite{CRN}, in order
+have inserted 5 different heads (only one at a time can be selected), inspired by the works of \cite{GEM}, \cite{NETVLAD}, \cite{CRN}, in order
 to generate the image descriptors. 
 
 \subsection{Base Head}
@@ -133,8 +133,8 @@ Inspired by the work presented in \cite{NETVLAD}, we have implemented also a Net
 elegant way the problem of computing Vectors of Locally Aggregated Descriptors (VLAD), as described in \cite{VLAD},
 in CNN. This network, in order to compute those VLAD descriptors, is using two different parts. 
 The first is called soft-assignment branch that is replacing the hard assignment of a descriptor to a single cluster
-with a soft assignment of the descriptor to every cluster. This is performed using a soft-max operation on top of the output of a $1x1$
-convolution layer that produces the probabilities $s_k$ that a given descriptor $x_i$ belongs to a cluster $k$ by:
+with a soft assignment of the descriptor to every cluster. This is performed using a soft-max operation on top of the output of a 1x1
+convolution layer. This operation produces the probabilities $s_k$ that a given descriptor $x_i$ belongs to a cluster $k$ by:
 \begin{equation}
 	s_k(x_i) = {{e^{W_k^T x_i+b_k}}\over{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
 \end{equation} 
@@ -161,20 +161,26 @@ in order to better mimic the traditional VLAD.
 
 \subsection{CRN head}
 Seen the results provided from the previous implemented heads and the success of the attention layers to make 
-a network focus on relevant only parts of an image, we have decided to add an attention layer at the NetVLAD
-head following the approach proposed by \cite{CRN}. This is perfectly integrated in the NetVLAD architecture and
-it has the duty to produce a map that rescales the weights produced by the soft assignment step of the NetVLAD layer.
+a network focus on relevant only parts of an image, we have decided to add a context-aware re-weighting layer to the NetVLAD
+head, following the approach proposed by \cite{CRN}. This is perfectly integrated in the NetVLAD architecture and
+it has the duty to produce a map that rescales the weights produced by the soft-assignment step of the NetVLAD layer.
 This layer is composed by an initial average pooling sub-layer
 that has the duty to reduce the dimensionality of the feature maps produced by the backbone. 
 Differently from what specified in \cite{CRN}, it is not reducing the features maps to a fixed 
 size but it is simply reducing by a half the dimensions of the features. In order to capture features at different
 spatial resolutions, $3$ convolution filters (with kernel sizes respectively of $3$, $5$, $7$) are applied to the pooled features.
-The  output of those filter is concatenated and an additional $1x1$ convolution filter is used in order to accumulate the 
+The  output of those filter is concatenated and an additional 1x1 convolution filter is used in order to accumulate the 
 features produced. The resulting mask is then upsampled, in order to restore the original features map dimensionality,
-by using a bilinear interpolator.This results into a mask that is used as to re-weight the features produced by the soft assignment specified
-into the NetVLAD description as showed in figure \ref{fig:CRN:ark} into the context modulation layer. This layer is 
-performing the product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
-in the standard NetVLAD core instead of the soft-assignment scores. Also this head requires the initialization of centroids as the 
+by using a bilinear interpolator. This results into a mask that is used to re-weight the scores produced by the soft-assignment, specified
+into the NetVLAD description, as showed in figure \ref{fig:CRN:ark}. This last operation is performed into the context modulation layer. This layer is 
+performing the element-wise product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
+in the standard NetVLAD core instead of the soft-assignment scores. So the final VLAD descriptors are produced by following:
+\begin{equation}
+	V(k) = \sum_{l \in R} m_l a_l^k (x_l - c_k)
+\end{equation}
+where for each spatial location $l$ of the feature map the residual of the locality $x_l$ from the cluster center $c_k$ 
+is multiplied by both the soft-assignment scores $a_l^k$ and the re-weighting mask $m_l$. 
+Also this head requires the initialization of centroids as the 
 NetVLAD head and the initialization adopted is the same described in the section \ref{sec:NETVLAD}.
 
 \begin{figure}
@@ -186,9 +192,9 @@ NetVLAD head and the initialization adopted is the same described in the section
 
 \subsection{CRN2 head}
 In order to reduce the number of parameters to be learned by the CRN head, we have implemented a second version of this head,
-called CRN2, that exploits the ideas of concatenating multiple $3x3$ filters in order to obtain the same receptive field of a
-bigger filter but using less parameters as suggested in \cite{VGG}. In particular we have replaced the $5x5$ and the $7x7$ filters showed in figure \ref{fig:CRN:ark}
-with respectively 2 and 3 stacked $3x3$ filters as showed in figure \ref{fig:CRN2:ark}. In addition to that, we have used dilated convolution
+called CRN2, that exploits the ideas of concatenating multiple 3x3 filters in order to obtain the same receptive field of a
+bigger filter but using less parameters as suggested in \cite{VGG}. In particular we have replaced the 5x5 and the 7x7 filters showed in figure \ref{fig:CRN:ark}
+with respectively 2 and 3 stacked 3x3 filters as showed in figure \ref{fig:CRN2:ark}. In addition to that, we have used dilated convolution
 in order to remove the pooling and upsampling layers by generating the mask directly at the desired resolution inspired by the work 
 proposed in \cite{atrous}. This, although requires 
 more computation, will produce more accurate masks that may help the network to better focus on the relevant parts of the images.
@@ -203,7 +209,7 @@ and the initialization adopted is the same described in the section \ref{sec:NET
 \end{figure}
 
 \section{Experiments}
-In this section we evaluate the results obtained by the implemented heads and the selection of best hyper-parameters will be discussed.
+In this section we evaluate the results obtained by the implemented heads compared to the base head.
 
 \begin{figure}
 	\centering
@@ -239,24 +245,25 @@ the proposed models generalize on different scenarios.
 
 \paragraph{Mining procedure}\label{par:mining}
 In order to train our models we need to generate triplets in the form $\{I_q, I^+, I^-\}$: for each query image $I_q$ we are looking for
-positive examples $I^+$ and negative ones ($I^-$). In order to do so, for each query image we retrieve the images into the database that are
-in a range specified by the positive distance threshold. We use 2 possibly different values for this threshold at train and test time.
+positive examples $I^+$ and negative ones $I^-$. In order to do so, for each query image we retrieve the images into the database that are
+in a range specified by the positive distance threshold parameter. We use 2 possibly different values for this threshold at train and test time.
 Among all images in this range, we select as best positive the one that has descriptors more similar to the query image and we use this image
 as $I^+$. All the images not in the positive distance threshold range are considered as negative samples. We select by default the 10 
-images, from the negative set, that have the as similar as possible descriptors as the query image. We call those images hard negatives and
-we are using those instead of randomly picking from the negative set in order to make the task for the network more challenging resulting in 
-a more robust model. Since we have to generate the descriptors that vary over the training procedure, we are periodically recalculating the 
+images, from the negative set, that have the most similar descriptors as the query image. We call those images hard negatives and
+we are using those instead of randomly picking from the negative set in order to make the task for the network more challenging and for obtaining  
+a more robust model. Since the mining procedure described depends on the descriptors that vary over the training procedure, we are periodically recalculating the 
 triplets within the epochs.
+
 \paragraph{Loss function}
 We have set the problem of visual geo-localization in approximating the location of a query image by retrieving the nearest 
-database images in the descriptors space. For that reason, the objective of our training procedure is to make images geographically
-close have a similar representation in descriptor space and instead make as far as possible the representation of geographically far images.
-This is possible by exploiting contrastive learning and the loss function that we are using is defined by
+database images in the descriptors space. For that reason, the objective of our training procedure is to make geographically
+close images have a similar representation in descriptor space and instead make as far as possible the representation of geographically far images.
+This is possible by exploiting contrastive learning and the loss function that we are using is a standard triplet loss defined by
 \begin{equation}
-   L(q, p, n) = \sum_i max( {|| q - p ||}_2 - {|| q - n_i||}_2 + m, 0)
+   L(q, p, n) = \sum_i^N max( {|| q - p ||}_2 - {|| q - n_i||}_2 + m, 0)
 \end{equation}
 where $p$, $q$ and $n_i$ represent the descriptors extracted by the query image, the positive image and the negative ones (by default we extract
-$10$ negatives examples for each query image as described in \nameref{par:mining}).
+$10$ negatives examples for each query image as described in \nameref{par:mining} and the number of negatives samples is denoted by $N$).
 The parameter $m$ is instead specifying a margin between the positive and negative descriptor representation of the images.
 In fact, if a negative sample has a distance in the descriptors space higher than the margin $m$ the resulting loss will be $0$ and, instead,
 if the distance between the positive and negative descriptors is lower than the margin the loss will be proportional to the margin violation.
@@ -264,16 +271,16 @@ if the distance between the positive and negative descriptors is lower than the 
 \paragraph{Metric adopted}
 Those results have been obtained by evaluating the models by using a standard evaluation procedure for place recognition.
 A given query image is said to be correctly localized if at least one of the $N$ retrieved images is placed at a distance lower
-or equal to $TTD$ from the ground truth position. This distance is set, if not differently specified, to $25$ meters. After
+or equal to test positive distance threshold from the ground truth position. This distance is set, if not differently specified, to $25$ meters. After
 that we are calculating the percentage of correctly classified images for different values of $N$ (indicated with $R@N$).  
 
 \subsection{Comparison among the proposed heads}
 The results of comparison between the various proposed heads are reported in table \ref{tab:base_results}. Those results have 
-been obtained on the pitts30k test set. As it's possible to notice the head that is giving best results is the CRN and that 
+been obtained on the pitts30k test set. As it's possible to notice the heads that are giving best results are the CRN and CRN2. That 
 shows that adding attention is essential for improving the quality of generated descriptors. It's important to notice also how 
-the results are influenced by the number of produced descriptors. In fact both the NetVLAD and the CRN head are generating much 
-more descriptors with respect to the GeM and the base heads and this seems correlated to higher recalls. Since the CRN and the NetVLAD
-heads are outperforming the other ones, we will focus more on those 2 during the rest of this section.
+the results are influenced by the number of produced descriptors. In fact both the NetVLAD and the CRNs heads are generating much 
+more descriptors with respect to the GeM and the base heads and this seems correlated to higher recalls. Since the CRNs and the NetVLAD
+heads are outperforming the other ones, we will focus more on those 3 during the rest of this section.
 
 \begin{table}
 	\centering
@@ -292,7 +299,7 @@ heads are outperforming the other ones, we will focus more on those 2 during the
 \end{table}
 
 The table \ref{tab:base_results:st_lucia} is reporting the results obtained on the St. Lucia dataset. As it's possible to notice, 
-those results are much lower than the ones obtained on the pitts30k dataset and this is probably due to the big domain shift between the 2 datasets.
+those results are much lower than the ones obtained on the pitts30k dataset and this is probably due to the significant domain shift between the datasets.
 However it's important to notice how also in this case attention is providing best results especially for lower recall values while
 simpler methods like GeM are providing the best performances at higher recall values. 
 \begin{table}
@@ -315,41 +322,42 @@ simpler methods like GeM are providing the best performances at higher recall va
 As it's possible to notice from table \ref{tab:base_results}, the performances of the CRN and CRN2 networks are very close one to each other as expected
 from the definition of the two networks. It's important to notice that the CRN2 network is using less parameters with respect to the CRN network. In fact,
 the CRN2 network is using only 245K parameters compared to the 529k parameters used by the CRN network for the generation of the mask.
-As shown in the table \ref{tab:time}, the time required to extract descriptors for a single image is higher for the CRN2 network with an increase of 32.5\% 
+As shown in the table \ref{tab:time}, the time required to extract descriptors for a single image is higher for the CRN2 network with an increase of 32.3\% 
 of the required execution time. This is due to the removal of the downsampling layer present in the original CRN implementation that implies the analysis of the image 
 at full resolution and this 
 has to be taken in consideration during the deploy phase where the descriptors for the query images have to be computed online. We have also noticed that an increase
-of the time required to produce descriptors is correlated to better recalls values and also this has to be taken in consideration while deploying an 
-application using those networks.
+of the time required to produce descriptors is correlated to better recalls values with the exception of the CRN2 head which is providing the same results as the CRN head
+and also this has to be taken in consideration while deploying an application using those networks.
 
 \begin{table}
    \centering
-   \begin{tabular}{|l|c|}
+   \begin{tabular}{|l|c|c|c|}
       \hline
-      Network     &  time (s)\\\hline
-      Base        &  0.0158\\
-      GeM         &  0.0158\\
-      NetVLAD     &  0.0206\\
-      CRN         &  0.0215\\
-      CRN2        &  0.0285\\\hline
+      Network   &  $R@5$&Params. (k) &  Time (ms)\\\hline
+      Base      &  80.6 &  	 0.0  	 &  15.76\\
+      GeM       &  87.0 &  	65.8  	 &  15.81\\
+      NetVLAD   &  89.3 &  	16.3  	 &  20.64\\
+      CRN       &  90.7 &  545.9  	 &  21.51\\
+      CRN2      &  90.7 &  262.0  	 &  28.47\\\hline
    \end{tabular}
-   \caption{The running time for computing the descriptors of a single image for the various networks computed on a GPU NVIDIA Tesla K80.}
+   \caption{The running time for computing the descriptors of a single image for the various networks computed on a GPU NVIDIA Tesla K80. The $R@5$ are computed on the pitts30k test set.
+   The number of parameters are not including the common backbone and, if required by the network, are not considering the cluster centroids. }
    \label{tab:time}
 \end{table}
 
 \subsection{Visual results}
 In this section we are going to show some visual results obtained with the various heads. In the figure \ref{fig:visual} we are 
-reporting the results obtained with the NetVLAD, CRN, CRN2 heads on a query image taken from the pitts30k dataset. How it's 
+reporting the results obtained with the NetVLAD, CRN and CRN2 heads on a query image taken from the pitts30k dataset. How it's 
 possible to notice from the second column of the figure \ref{fig:visual} that shows the soft-assignment scores (summed over the 64 clusters used) heatmap 
 on the query 
-image, the attention layers are fundamental in order to make the network focus only on the relevant parts of the image.
+image, the context-aware re-weighting layers used are fundamental in order to make the network focus only on the relevant parts of the image.
 It's important to notice that the CRN2 network is focusing at smaller portions of the query image and this can increase the difficulty in finding 
 really discriminative zones of the query while the CRN model is focusing on wider areas that include the most relevant parts of the image.
 
 \begin{figure}
    \centering
-   \setlength{\tabcolsep}{-0.1pt}   % set length to -2pt
-   \addtolength{\tabcolsep}{-0.1pt} % reduce space by -2pt
+   \setlength{\tabcolsep}{-0.1pt}   
+   \addtolength{\tabcolsep}{-0.1pt} 
    \def\arraystretch{0.2}
    \begin{tabular}{ccc}
       Query & Soft-assignment & Prediction\\
