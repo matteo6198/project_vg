@@ -136,7 +136,7 @@ The first is called soft-assignment branch that is replacing the hard assignment
 with a soft assignment of the descriptor to every cluster. This is performed using a soft-max operation on top of the output of a 1x1
 convolution layer. This operation produces the probabilities $s_k$ that a given descriptor $x_i$ belongs to a cluster $k$ by:
 \begin{equation}
-	s_k(x_i) = {{e^{W_k^T x_i+b_k}}\over{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
+	s_k(x_i) = {\frac{e^{W_k^T x_i+b_k}}{\sum_{k'} e^{W_{k'}^T x_i+b_{k'}}}}
 \end{equation} 
 The second part, denominated VLAD core, is effectively computing the 
 VLAD representation of the image given an image descriptor $x$, the cluster centers $c$ and the computed soft assignments
@@ -149,8 +149,8 @@ The obtained descriptors are then intra-normalized (using a column-wise L-2 norm
 final L-2 norm operation is applied.
 For this network is fundamental to initialize the cluster centers in order to obtain good performances. This initialization
 is preformed in a preliminary step using a small subset of the training data available and consists in computing the features 
-representations, using the pre-trained ResNet-18 backbone, and then extracting the descriptors by randomly selecting some of the 
-obtained features. Then, in order to obtain the cluster's centroids, k-means is used over the computed descriptors and the 
+representations, using the pre-trained ResNet-18 backbone, and then extracting the descriptors by randomly selecting some of the locations of
+the obtained features. Then, in order to compute the cluster's centroids, k-means is used over the descriptors. The 
 weights in the convolution layer for soft-assignment are initialized, to reproduce the results that would have been obtained
 with VLAD described in \cite{VLAD}, using:
 \begin{equation}
@@ -176,7 +176,7 @@ into the NetVLAD description, as showed in figure \ref{fig:CRN:ark}. This last o
 performing the element-wise product of the mask and the soft-assignment scores. The output of the context modulation layer is then used 
 in the standard NetVLAD core instead of the soft-assignment scores. So the final VLAD descriptors are produced by following:
 \begin{equation}
-	V(k) = \sum_{l \in R} m_l a_l^k (x_l - c_k)
+	V(k) = \sum_{l \in L} m_l a_l^k (x_l - c_k)
 \end{equation}
 where for each spatial location $l$ of the feature map the residual of the locality $x_l$ from the cluster center $c_k$ 
 is multiplied by both the soft-assignment scores $a_l^k$ and the re-weighting mask $m_l$. 
