@@ -58,16 +58,16 @@
 	of the various images that contains useful information and at the same time ignore not 
 	informative areas like the ones containing elements like cars or pedestrians. For that 
 	reason attention layers are fundamental in the proposed network. In addition to that we 
-	are comparing state of the art techniques for the visual geolocalization task like GeM \cite{GEM}, 
+	are comparing state of the art techniques for the visual geo-localization task like GeM \cite{GEM}, 
 	NetVLAD \cite{NETVLAD} and CRN \cite{CRN}. The code used is publicly available 
 	\href{https://github.com/matteo6198/project_visual_geolocalization}{here}
 \end{abstract}
 
 %%%%%%%%% BODY TEXT
 \section{Introduction}
-	For what concerns geolocalization and its purpose the best results have been achieved through
+	For what concerns geo-localization and its purpose the best results have been achieved through
 	deep learning algorithms that, thanks to the analysis of pixels of a given photograph, could retrieve 
-	very accurated informations using convolutional neural networks (CNN). Of course image retrieval
+	very accurate information using convolutional neural networks (CNN). Of course image retrieval
 	is not an easy task, it aims at extracting the most interesting features for each image from a large database; then for a query image
 	it has to extract useful features from that too and then  find a correspondence between the features
 	of the query photograph and the ones inside the database. 
@@ -81,28 +81,28 @@
 	Moreover visual geo-localization consists of finding region of interest in photographs: task-relevant
 	information is not generally uniformly distributed throughout an image, in fact focusing on "interesting" areas
 	can often allow to reach better performances. Elements such pedestrians or trees, vehicles and road signs can introduce misleading cues 
-	into the process; because of this, Contextual Reweighting Network (CRN) \cite{CRN} is a valid option in order to 
-	illistrate that the contextual information contains rich high-level information that includes structural cues
+	into the process; because of this, Contextual Reweighing Network (CRN) \cite{CRN} is a valid option in order to 
+	illustrate that the contextual information contains rich high-level information that includes structural cues
 	like different different perspectives of buildings and architectural styles.
 
 \section{Related works}
-	Solving visual geolocalization issues leads to the resolution of other sub-problems.
+	Solving visual geo-localization issues leads to the resolution of other sub-problems.
 	\newline Image retrieval consists of different steps such as features extraction, feature aggregation and similarity research.
 	The methods on which each step has been approached are different: for feature extraction the most important ones are
 	the scale invariant feature transform (SIFT) \cite{SIFT}, SURF \cite{SURF} which tries to keep the computation faster;
 	then RootSIFT \cite{RootSIFT} which finds better descriptor than SIFT and speed-up computational time.
-	\newline Feature aggregation comes from natural language processing trying to count the occurences of many words in a vector ("bag of words");
+	\newline Feature aggregation comes from natural language processing trying to count the occurrences of many words in a vector ("bag of words");
 	after that it has become a cluster problem where to assign each item of a given set to a peculiar set which represents 
 	components with the same feature: the Vector of Locally Aggregated Descriptors (VLAD) \cite{VLAD} is a way to accomplish to this task, in which
 	is computed the distance between the feature and the center if its cluster for a more specific representation.
 	Weights are also assigned to each feature in order that high-value weights represent more discriminative features.
 	Furthermore NetVLAD \cite{NETVLAD} has been proposed as a layer plugged in CNNs.
 	\newline For what concerns similarity research we can assume that the euclidean distance is the oldest method to find the most similar
-	vector of features to a given one and it is practicable until dimensions don't gropw up. In this case it is better to use PCA technique
+	vector of features to a given one and it is practicable until dimensions don't grow up. In this case it is better to use PCA technique
 	to afford dimensionality reduction.
 	\newline Visual place recognition could also be seen from another domain using 3D based methods to deal with it. 3D datasets are used to find
 	the location of 2D query image thanks to the use of particular instrumentation that allows to reconstruct images from 2D to 3D but
-	causing a loss in terms of computation time and storage needs \cite{3D}. For this purpose those methous are usually used with 2D-based methods
+	causing a loss in terms of computation time and storage needs \cite{3D}. For this purpose those methods are usually used with 2D-based methods
 	that try to filter a limited number of candidates from the dataset and then processing 3D methods.
 
 \section{Methods}
@@ -376,18 +376,18 @@ really discriminative zones of the query while the CRN model is focusing on wide
 \end{figure}
 	
 \section{Ablation study}
-In this section we discuss the effect of changing one by one some paramethers of the NetVLAD network, we expecially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation tecniques and by changing the resolution of the images.\\
+In this section we discuss the effect of changing one by one some parameters of the NetVLAD network, we especially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation techniques and by changing the resolution of the images.\\
 As optimizer algorithm we decided to use the Stochastic Gradient Descent (SGD), the results of the application of this iterative method, displayed in the table \ref{tab:SGD}, are an increment of the recall int the Pitts30k dataset and a decrement in the St, Lucia dataset.\\
 pitts30k
 \begin{table}[!h]
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
-		.&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
-		NetVLAD  Pitts30k     &         79.1   &         89.3   &          92.3   &          94.4   \\
-		NetVLAD (SGD) Pitts30k  &         \textbf{79.5}   &         \textbf{90.4}   &          \textbf{93.0}   &          \textbf{95.0}   \\ \hline
-		NetVLAD St. Lucia        &         \textbf{43.0}   &         \textbf{58.5}   &          \textbf{67.4}   &          \textbf{74.7}   \\
-		NetVLAD (SGD) St. Lucia      &         42.1   & 56.8  &  63.7  &  71.4  \\
+		&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
+		 Pitts30k     &         79.1   &         89.3   &          92.3   &          94.4   \\
+		(SGD) Pitts30k  &         \textbf{79.5}   &         \textbf{90.4}   &          \textbf{93.0}   &          \textbf{95.0}   \\ \hline
+		St. Lucia        &         \textbf{43.0}   &         \textbf{58.5}   &          \textbf{67.4}   &          \textbf{74.7}   \\
+		(SGD) St. Lucia      &         42.1   & 56.8  &  63.7  &  71.4  \\
 		 \hline
 	\end{tabular}
 	\caption{Results on the pitts30k and St. Lucia test sets obtained with the NetVLAD head compared with the NetVLAD+SDG head.}
@@ -401,16 +401,16 @@ As first ablation study we tried different learning rates, from the table we can
 	\begin{tabular}{|l|c|c|c|c|}
 		\hline
 		&          $R@1$  &        $R@5$  &        $R@10$ &        $R@20$   \\ \hline     
-		lr = 1e-3 &         78.6    &    89.4       &    92.5       &         94.7       \\
-		lr = 1e-4 &         60.0    &         79.7  & 86.4 & 91.2  \\    
-		lr = 1e-5 & \textbf{82.3}   & \textbf{92.7} &         \textbf{95.0}  & \textbf{97.0}          \\
+		lr = $10^{-3}$ &         78.6    &    89.4       &    92.5       &         94.7       \\
+		lr = $10^{-4}$ &         79.1    &         89.3  & 92.3 & 94.4  \\    
+		lr = $10^{-5}$ & \textbf{82.3}   & \textbf{92.7} &         \textbf{95.0}  & \textbf{97.0}          \\
 		\hline
 	\end{tabular}
 	\caption{Results obtained with the NetVLAD head on the pitts30k test set with different learning rates}
 	\label{tab:NETVLAD:lr}
 \end{table}
-\subsection{Comparison between different positive distance treshold}
-Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${val\_positives\_dist\_threshold}$ with different values. The graph contained in figure 6 shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
+\subsection{Comparison between different positive distance threshold}
+Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure 6 shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -429,7 +429,7 @@ Initially the distance at which positive are taken was set at 25 meters, we trie
 	\caption{Graph showing the recalls obtained with different train positive distance threshold on both the pitts30k \ref{fig:recalls:train_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:train_th:st_lucia} dataset.}
 	\label{fig:recalls:train_th}
 \end{figure}
-We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perfom in a better way than smaller ones.\\
+We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perform in a better way than smaller ones.\\
 By setting a larger positive distance we have worse performances because it leads to an increase in the false positives.
 \begin{figure}[!h]
 	\centering
@@ -450,10 +450,10 @@ By setting a larger positive distance we have worse performances because it lead
 	\label{fig:recalls:test_th}
 \end{figure}
 In the Pitts30k dataset we can see that the recall on one image is 65.1 with the positive threshold distance set at 10 meters while the recall with the distance set at 50 meters is 82.9, there is a margin of 17.8\%\\
-The same trend is mantained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance treshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R1 and becomes 13\% at R20.
+The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R1 and becomes 13\% at R20.
 
-\subsection{Comparison between different data augmentation tecniques}
-In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip + Rotate and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip we flipped the image over the vertical axis and with the last trasformation we erase with random values the pixel contained inside a rectangle region.\\
+\subsection{Comparison between different data augmentation techniques}
+In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip + Rotate and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip + Rotate we flipped the image over the vertical axis and we applied an additional rotation to the image and with the last transformation we have applied rectangular black patches to the image in order to mimic occlusions.\\
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -472,13 +472,13 @@ In order to see how the results change we tried some data augmentation technique
 	\caption{Graph showing the recalls obtained with different augmentation techniques on both the pitts30k \ref{fig:recalls:augment:pitts30k} dataset and the St. Lucia \ref{fig:recalls:augment:st_lucia} dataset.}
 	\label{fig:recalls:augment}
 \end{figure}
-For the Pitts30k dataset we can see in figure \textcolor{red}{5a} that all the data augmentation techniques have a similar performance compared to the default configuration of the dataset; Only the flip and rotate technique gets sightly worse results in the first recalls.\\
-For the St. Lucia dataset we can see in figure \textcolor{red}{5b} that all the data augmentation techniques have very different performance, in this case only the Color Jitter transformation gets better results than the default configurations, while  Random Erasing and Flip + Rotate get sightly worse results in all the recalls.\\
-The Color Jitter tecnique is the only tecnique that gets better results because it's the only one that does not change the structure of the images.
+For the Pitts30k dataset we can see in figure \ref{fig:recalls:augment:pitts30k} that all the data augmentation techniques have a similar performance compared to the default configuration of the dataset; Only the flip and rotate technique gets sightly worse results in the first recalls.\\
+For the St. Lucia dataset we can see in figure \ref{fig:recalls:augment:st_lucia}  that all the data augmentation techniques have very different performance, in this case only the Color Jitter transformation gets better results than the default configurations, while  Random Erasing and Flip + Rotate get sightly worse results in all the recalls.\\
+The Color Jitter technique is the only technique that gets better results because it's the only one that does not change the structure of the images.
 
 \subsection{Comparison between different images sizes}
 The last ablation study has been the variation of the images sizes by scaling their dimensions by a scaling factor. We decided to try 4 scaling factors (including the standard one 1.00), the value selected are: 0.50, 0.75, 1.00, and 1.25.\\
-The results of the scaling factor are shown in figure \textcolor{red}{7}, for both the Pitts30k and St. Lucia dataset it's clear that a reduction of the image size leads to an increment in the recall's value; This increment is way more visible in the St. Lucia dataset (figure \textcolor{red}{7b}).
+The results of the scaling factor are shown in figure \ref{fig:recalls:resize}, for both the Pitts30k and St. Lucia dataset it's clear that a reduction of the image size leads to an increment in the recall's value; This increment is way more visible in the St. Lucia dataset (figure \ref{fig:recalls:resize:st_lucia}).
 	\begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -500,12 +500,12 @@ The results of the scaling factor are shown in figure \textcolor{red}{7}, for bo
 
 \section{Conclusions}
 We tried  two different convolutional neural network on two different datasets; after seeing that the GeM network performs worse than NetVLAD
-we decided to conitue performing some different configurations on the second network. In order to increase the performances of the NetVLAD one
-we took insiprations from \cite{CRN} adding an attentention layer which was able to understand which features of the photograph were relevant in order
+we decided to continue performing some different configurations on the second network. In order to increase the performances of the NetVLAD one
+we took inspirations from \cite{CRN} adding an attention layer which was able to understand which features of the photograph were relevant in order
 to better recognize the locations in the photograph.\\
-Furthermore we improved the performances of the network by performing some ablation studies over the paramethers of the network and modyfing 
+Furthermore we improved the performances of the network by performing some ablation studies over the parameters of the network and modifying 
 the dataset where for each image we tried different edits: from resizing the whole image to rotating and flipping it. Not all changes we made
-led to improve the network performances, but in each case some of them were significatively important to improve performances in terms of 
+led to improve the network performances, but in each case some of them were  important to improve performances in terms of 
 loss function.
 %%%%%%%%% REFERENCES
 {\small
