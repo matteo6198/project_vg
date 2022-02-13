@@ -77,7 +77,13 @@
 	representation of a place that is rich enough to distinguish similarly looking places. The system built over
 	visual place recognition must respect different constraints in terms of time spent and accuracy for retrieving GPS coordinates
 	of a certain photograph. Thus, before starting, consider that each image should be taken
-	from different points of view, with different lighting conditions, with dynamic objects and in different long-term conditions.
+	from different points of view, with different lighting conditions, with dynamic objects and in different long-term conditions.\\
+	Moreover visual geo-localization consists of finding region of interest in photographs: task-relevant
+	information is not generally uniformly distributed throughout an image, in fact focusing on "interesting" areas
+	can often allow to reach better performances. Elements such pedestrians or trees, vehicles and road signs can introduce misleading cues 
+	into the process; because of this, Contextual Reweighting Network (CRN) \cite{CRN} is a valid option in order to 
+	illistrate that the contextual information contains rich high-level information that includes structural cues
+	like different different perspectives of buildings and architectural styles.
 
 \section{Related works}
 	Solving visual geolocalization issues leads to the resolution of other sub-problems.
@@ -493,7 +499,14 @@ The results of the scaling factor are shown in figure \textcolor{red}{7}, for bo
 \end{figure}
 
 \section{Conclusions}
-
+We tried  two different convolutional neural network on two different datasets; after seeing that the GeM network performs worse than NetVLAD
+we decided to conitue performing some different configurations on the second network. In order to increase the performances of the NetVLAD one
+we took insiprations from \cite{CRN} adding an attentention layer which was able to understand which features of the photograph were relevant in order
+to better recognize the locations in the photograph.\\
+Furthermore we improved the performances of the network by performing some ablation studies over the paramethers of the network and modyfing 
+the dataset where for each image we tried different edits: from resizing the whole image to rotating and flipping it. Not all changes we made
+led to improve the network performances, but in each case some of them were significatively important to improve performances in terms of 
+loss function.
 %%%%%%%%% REFERENCES
 {\small
 	\bibliographystyle{ieee_fullname}
