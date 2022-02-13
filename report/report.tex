@@ -376,26 +376,10 @@ really discriminative zones of the query while the CRN model is focusing on wide
 \end{figure}
 	
 \section{Ablation study}
-In this section we discuss the effect of changing one by one some parameters of the NetVLAD network, we especially focused on trying different learning rates, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation techniques and by changing the resolution of the images.\\
-As optimizer algorithm we decided to use the Stochastic Gradient Descent (SGD), the results of the application of this iterative method, displayed in the table \ref{tab:SGD}, are an increment of the recall int the Pitts30k dataset and a decrement in the St, Lucia dataset.\\
-pitts30k
-\begin{table}[!h]
-	\centering
-	\begin{tabular}{|l|c|c|c|c|}
-		\hline
-		&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
-		 Pitts30k     &         79.1   &         89.3   &          92.3   &          94.4   \\
-		(SGD) Pitts30k  &         \textbf{79.5}   &         \textbf{90.4}   &          \textbf{93.0}   &          \textbf{95.0}   \\ \hline
-		St. Lucia        &         \textbf{43.0}   &         \textbf{58.5}   &          \textbf{67.4}   &          \textbf{74.7}   \\
-		(SGD) St. Lucia      &         42.1   & 56.8  &  63.7  &  71.4  \\
-		 \hline
-	\end{tabular}
-	\caption{Results on the pitts30k and St. Lucia test sets obtained with the NetVLAD head compared with the NetVLAD+SDG head.}
-	\label{tab:SGD}
-\end{table}
+In this section we discuss the effect of changing one by one some parameters of the NetVLAD network, we especially focused on trying different learning rates and optimizers, modifying the distance at which positives are taken.\\ We also changed the input images of the dataset by implementing some data augmentation techniques and by changing the resolution of the images.\\
 
-\subsection{Comparison between different learning rates}
-As first ablation study we tried different learning rates, from the table we can see that the best results in calculating the percentage of correctly classified images are obtained with a learning rate of 1 , with this learning rate the network is superior to the other configuration of learning rate in each case. We also noticed that by decreasing the learning rate we increment the number of epochs needed to end the training.
+\subsection{Comparison between different learning rates and optimizers}
+As first ablation study we tried different learning rates, from the table \ref{tab:NETVLAD:lr} we can see that the best results in calculating the percentage of correctly localized images are obtained with a learning rate of $10^{-5}$, with this learning rate the network is superior to the other configuration of learning rate in each case. We also noticed that by decreasing the learning rate we increment the number of epochs needed to end the training.
 \begin{table}[!h]
 	\centering
 	\begin{tabular}{|l|c|c|c|c|}
@@ -409,8 +393,28 @@ As first ablation study we tried different learning rates, from the table we can
 	\caption{Results obtained with the NetVLAD head on the pitts30k test set with different learning rates}
 	\label{tab:NETVLAD:lr}
 \end{table}
+As optimizer algorithm we decided to test the Stochastic Gradient Descent (SGD) and the Adam optimizer.
+The results of the application of SGD, displayed in the table \ref{tab:SGD}, are showing an increment of the recall int the Pitts30k dataset and a decrement in the St. Lucia dataset compared to ones obtained with the Adam optimizer.
+We decided to use the Adam optimizer in the rest of our study since it seems to provide more stable results and a lower training time.
+
+
+\begin{table}[!h]
+	\centering
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		&        $R@1$   &        $R@5$   &        $R@10$  &        $R@20$   \\ \hline
+		(Adam) Pitts30k     &         79.1   &         89.3   &          92.3   &          94.4   \\
+		(SGD) Pitts30k  &         \textbf{79.5}   &         \textbf{90.4}   &          \textbf{93.0}   &          \textbf{95.0}   \\ \hline
+		(Adam) St. Lucia        &         \textbf{43.0}   &         \textbf{58.5}   &          \textbf{67.4}   &          \textbf{74.7}   \\
+		(SGD) St. Lucia      &         42.1   & 56.8  &  63.7  &  71.4  \\
+		 \hline
+	\end{tabular}
+	\caption{Results on the pitts30k and St. Lucia test sets obtained with the NetVLAD+Adam head compared with the NetVLAD+SDG head.}
+	\label{tab:SGD}
+\end{table}
+
 \subsection{Comparison between different positive distance threshold}
-Initially the distance at which positive are taken was set at 25 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure 6 shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
+Initially the distance at which positive are taken at train time was set at 10 meters, we tried to change the parameter ${train\_positives\_dist\_threshold}$ with different values. The graph contained in figure \ref{fig:recalls:train_th} shows that, during training, the positive distance threshold set at 5 meter outperforms all the other thresholds in every recall in both the Pitts30k and St Lucia datasets.\\
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -429,8 +433,8 @@ Initially the distance at which positive are taken was set at 25 meters, we trie
 	\caption{Graph showing the recalls obtained with different train positive distance threshold on both the pitts30k \ref{fig:recalls:train_th:pitts30k} dataset and the St. Lucia \ref{fig:recalls:train_th:st_lucia} dataset.}
 	\label{fig:recalls:train_th}
 \end{figure}
-We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perform in a better way than smaller ones.\\
-By setting a larger positive distance we have worse performances because it leads to an increase in the false positives.
+By setting a larger train positive distance threshold we have worse performances because, for the network, the task of localization is easier with larger thresholds since the position is more approximate and the network is producing less discriminative descriptors while training with a more challenging task has provided good results at test time.\\
+We also tried different test positive distance threshold and in this case there is a big difference between the different distances, greater distances perform in a better way than smaller ones as expected since we are reducing the desired precision of the network by accepting as good also images far from the query.
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -450,10 +454,10 @@ By setting a larger positive distance we have worse performances because it lead
 	\label{fig:recalls:test_th}
 \end{figure}
 In the Pitts30k dataset we can see that the recall on one image is 65.1 with the positive threshold distance set at 10 meters while the recall with the distance set at 50 meters is 82.9, there is a margin of 17.8\%\\
-The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R1 and becomes 13\% at R20.
+The same trend is maintained in all the different recalls on both the Pitts30k and St. Lucia datasets, but while in the Pitts30k the margin between the distance threshold set at 10 meters and the one set at 50 meters stabilizes, in the St Lucia Datasets keeps incrementing, initially it's 6\% at R@1 and becomes 13\% at R@20.
 
 \subsection{Comparison between different data augmentation techniques}
-In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip + Rotate and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip + Rotate we flipped the image over the vertical axis and we applied an additional rotation to the image and with the last transformation we have applied rectangular black patches to the image in order to mimic occlusions.\\
+In order to see how the results change we tried some data augmentation techniques, we decided to use 3 of them: Color Jitter, Horizontal Flip + Rotate and Random Erasing. With Color Jitter we randomized the contrast and brightness of the image, with Horizontal Flip + Rotate we flipped the image over the vertical axis and we applied an additional rotation to the image and with the last transformation we have applied rectangular black patches on the image in order to mimic occlusions.\\
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -479,6 +483,7 @@ The Color Jitter technique is the only technique that gets better results becaus
 \subsection{Comparison between different images sizes}
 The last ablation study has been the variation of the images sizes by scaling their dimensions by a scaling factor. We decided to try 4 scaling factors (including the standard one 1.00), the value selected are: 0.50, 0.75, 1.00, and 1.25.\\
 The results of the scaling factor are shown in figure \ref{fig:recalls:resize}, for both the Pitts30k and St. Lucia dataset it's clear that a reduction of the image size leads to an increment in the recall's value; This increment is way more visible in the St. Lucia dataset (figure \ref{fig:recalls:resize:st_lucia}).
+This is probably due to the fact that the network can ignore more easily small details not relevant to the task since they are less present in the small resolution pictures and easily focus on the relevant parts of the image like the shapes of the buildings.
 	\begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.23\textwidth}
@@ -503,10 +508,10 @@ We tried  two different convolutional neural network on two different datasets; 
 we decided to continue performing some different configurations on the second network. In order to increase the performances of the NetVLAD one
 we took inspirations from \cite{CRN} adding an attention layer which was able to understand which features of the photograph were relevant in order
 to better recognize the locations in the photograph.\\
-Furthermore we improved the performances of the network by performing some ablation studies over the parameters of the network and modifying 
-the dataset where for each image we tried different edits: from resizing the whole image to rotating and flipping it. Not all changes we made
-led to improve the network performances, but in each case some of them were  important to improve performances in terms of 
-loss function.
+Furthermore we fine-tuned the performances of the network by performing some ablation studies over the parameters of the network and different 
+augmentation techniques: from resizing the whole image to rotating and flipping it. Not all changes we made
+led to improvements of the network performances, but each of them has been proved useful to understand how the applied changes influence
+the task of visual geo-localization. 
 %%%%%%%%% REFERENCES
 {\small
 	\bibliographystyle{ieee_fullname}
